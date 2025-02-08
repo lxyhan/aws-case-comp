@@ -1,122 +1,212 @@
-export const videos = [
-  {
-    id: 1,
-    title: "The Digital Revolution: Silicon Valley 1990s",
-    duration: "45:22",
-    summary: "Rare footage documenting the rise of tech giants and startup culture in Silicon Valley during the 90s, featuring exclusive interviews with early tech pioneers.",
-    type: "Documentary",
-    industry: "Technology & Innovation",
-    era: "Archive",
-    tags: ["Silicon Valley", "Tech History", "Startups"],
-    aiTags: ["Steve Jobs", "Computing", "Internet Boom"],
-    thumbnail: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    monetizationPotential: 0.89,
-    usageRights: "Full Commercial",
-    viewCount: 15234
-  },
-  {
-    id: 2,
-    title: "The Final Match: World Cup '86",
-    duration: "120:00",
-    summary: "Complete coverage of the historic 1986 World Cup final, featuring Maradona's legendary performance and exclusive behind-the-scenes footage.",
-    type: "Event Coverage",
-    industry: "Sports & Entertainment",
-    era: "Archive",
-    tags: ["World Cup", "Soccer", "Maradona"],
-    aiTags: ["Sports History", "Argentina", "Mexico"],
-    thumbnail: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    monetizationPotential: 0.95,
-    usageRights: "Limited Commercial",
-    viewCount: 89321
-  },
-  {
-    id: 3,
-    title: "Wall Street: The 2008 Financial Crisis",
-    duration: "60:15",
-    summary: "Comprehensive documentation of the 2008 financial crisis, featuring exclusive trading floor footage and expert interviews.",
-    type: "News Footage",
-    industry: "Business & Finance",
-    era: "2000s",
-    tags: ["Financial Crisis", "Wall Street", "Banking"],
-    aiTags: ["Lehman Brothers", "Stock Market", "Recession"],
-    thumbnail: "https://images.unsplash.com/photo-1491336477066-31156b5e4f35?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    monetizationPotential: 0.88,
-    usageRights: "Full Commercial",
-    viewCount: 42150
-  },
-  {
-    id: 4,
-    title: "The Space Race: NASA Archives",
-    duration: "90:30",
-    summary: "Restored footage from NASA's golden age, including never-before-seen Apollo mission content and astronaut interviews.",
-    type: "Historical Archives",
-    industry: "Science & Education",
-    era: "Archive",
-    tags: ["NASA", "Space Exploration", "Apollo"],
-    aiTags: ["Moon Landing", "Astronauts", "Space Technology"],
-    thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    monetizationPotential: 0.92,
-    usageRights: "Educational",
-    viewCount: 67234
-  },
-  {
-    id: 5,
-    title: "Artificial Intelligence: The Next Frontier",
-    duration: "55:45",
-    summary: "Modern documentary exploring the latest developments in AI, featuring interviews with leading researchers and tech CEOs.",
-    type: "Documentary",
-    industry: "Technology & Innovation",
-    era: "2020s",
-    tags: ["AI", "Machine Learning", "Tech Future"],
-    aiTags: ["Neural Networks", "GPT", "Robotics"],
-    thumbnail: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    monetizationPotential: 0.86,
-    usageRights: "Full Commercial",
-    viewCount: 28456
-  },
-  {
-    id: 6,
-    title: "Broadway Behind the Curtain",
-    duration: "75:00",
-    summary: "Exclusive backstage access to Broadway's biggest productions, featuring rehearsal footage and performer interviews.",
-    type: "Documentary",
-    industry: "Arts & Culture",
-    era: "2010s",
-    tags: ["Broadway", "Theater", "Performing Arts"],
-    aiTags: ["Musical Theater", "Stage Production", "Entertainment"],
-    thumbnail: "https://images.unsplash.com/photo-1503095396549-807759245b35?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    monetizationPotential: 0.81,
-    usageRights: "Limited Commercial",
-    viewCount: 12567
-  },
-  {
-    id: 7,
-    title: "Climate Change: A Global Investigation",
-    duration: "65:30",
-    summary: "Award-winning documentary covering climate change impacts worldwide, with unique footage from remote locations.",
-    type: "Documentary",
-    industry: "Science & Education",
-    era: "2020s",
-    tags: ["Climate Change", "Environment", "Global Warming"],
-    aiTags: ["Environmental Science", "Sustainability", "Natural Disasters"],
-    thumbnail: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    monetizationPotential: 0.85,
-    usageRights: "Full Commercial",
-    viewCount: 34789
-  },
-  {
-    id: 8,
-    title: "Berlin Wall: The Fall",
-    duration: "80:15",
-    summary: "Historic footage of the Berlin Wall's fall, including exclusive coverage of key moments and citizen interviews.",
-    type: "Historical Archives",
-    industry: "Politics & Current Affairs",
-    era: "Archive",
-    tags: ["Cold War", "German History", "European Politics"],
-    aiTags: ["Berlin Wall", "Germany", "Political History"],
-    thumbnail: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    monetizationPotential: 0.94,
-    usageRights: "Full Commercial",
-    viewCount: 56234
-  }
-]
+const videoLibrary = {
+  categories: [
+    {
+      id: 'historical-news',
+      name: 'Historical News',
+      featured: [
+        {
+          name: 'Major Historical Events',
+          href: '#',
+          thumbnailSrc: '/video_images/b1.jpg',
+          description: 'Archive of significant news coverage from 1960-2000',
+        },
+        {
+          name: 'Landmark Broadcasts',
+          href: '#',
+          thumbnailSrc: '/video_images/b2.jpg',
+          description: 'Collection of pioneering broadcast moments',
+        },
+      ],
+      sections: [
+        {
+          id: 'decades',
+          name: 'News by Decade',
+          items: [
+            { name: '1960s Coverage', href: '#' },
+            { name: '1970s Reports', href: '#' },
+            { name: '1980s Archives', href: '#' },
+            { name: '1990s Collection', href: '#' },
+          ],
+        },
+        {
+          id: 'categories',
+          name: 'Historical Categories',
+          items: [
+            { name: 'Political Milestones', href: '#' },
+            { name: 'Space Exploration', href: '#' },
+            { name: 'Cultural Moments', href: '#' },
+            { name: 'Sports History', href: '#' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'educational',
+      name: 'Educational Archives',
+      featured: [
+        {
+          name: 'Science & Nature Series',
+          href: '#',
+          thumbnailSrc: '/video_images/b3.jpg',
+          description: 'Classic educational programming from our science division',
+        },
+        {
+          name: 'Historical Documentaries',
+          href: '#',
+          thumbnailSrc: '/video_images/b4.jpg',
+          description: 'In-depth historical documentaries from 1970-1990',
+        },
+      ],
+      sections: [
+        {
+          id: 'subjects',
+          name: 'Subject Areas',
+          items: [
+            { name: 'Science Programs', href: '#' },
+            { name: 'History Series', href: '#' },
+            { name: 'Arts & Culture', href: '#' },
+            { name: 'Technical Education', href: '#' },
+          ],
+        },
+        {
+          id: 'special-collections',
+          name: 'Special Collections',
+          items: [
+            { name: 'Educational Series', href: '#' },
+            { name: 'Instructional Videos', href: '#' },
+            { name: 'Documentary Specials', href: '#' },
+          ],
+        },
+      ],
+    },
+  ],
+  filters: [
+    {
+      id: 'decade',
+      name: 'Decade',
+      options: [
+        { value: '1960s', label: '1960s' },
+        { value: '1970s', label: '1970s' },
+        { value: '1980s', label: '1980s' },
+        { value: '1990s', label: '1990s' },
+        { value: '2000s', label: '2000s' },
+      ],
+    },
+    {
+      id: 'format',
+      name: 'Original Format',
+      options: [
+        { value: 'film', label: '16mm Film' },
+        { value: 'umatic', label: 'U-matic' },
+        { value: 'betacam', label: 'Betacam' },
+        { value: 'vhs', label: 'VHS' },
+        { value: 'betacamsp', label: 'Betacam SP' },
+      ],
+    },
+    {
+      id: 'type',
+      name: 'Content Type',
+      options: [
+        { value: 'news', label: 'News Coverage' },
+        { value: 'documentary', label: 'Documentary' },
+        { value: 'educational', label: 'Educational' },
+        { value: 'cultural', label: 'Cultural Program' },
+        { value: 'scientific', label: 'Scientific Content' },
+      ],
+    },
+  ],
+  videos: [
+    {
+      id: 1,
+      title: "Moon Landing Special Coverage (1969)",
+      href: '#',
+      duration: '2:15:00',
+      description: 'Complete original broadcast coverage of the Apollo 11 moon landing, including pre-launch interviews and live commentary.',
+      type: 'Historical News',
+      thumbnailSrc: '/video_images/v1.png',
+      metadata: {
+        date: '1969-07-20',
+        views: 125000,
+        format: '16mm Film',
+        tags: ['space', 'historical', 'apollo program'],
+        transcript: 'Partial transcript available',
+        embeddings: 'Vector ID: apollo_11_coverage',
+        preservation: 'Digitized from original 16mm film reels'
+      }
+    },
+    {
+      id: 2,
+      title: "Understanding DNA (1973)",
+      href: '#',
+      duration: '28:15',
+      description: 'Educational series exploring the fundamental concepts of DNA and genetic science, featuring pioneering animations.',
+      type: 'Educational',
+      thumbnailSrc: '/video_images/v2.png',
+      metadata: {
+        date: '1973-03-15',
+        views: 89000,
+        format: 'U-matic',
+        tags: ['science', 'education', 'genetics'],
+        transcript: 'Full transcript available',
+        embeddings: 'Vector ID: dna_education_1973',
+        preservation: 'Restored from U-matic tape'
+      }
+    },
+    {
+      id: 3,
+      title: "Fall of the Berlin Wall (1989)",
+      href: '#',
+      duration: '1:45:30',
+      description: 'Live coverage of the historic fall of the Berlin Wall, including on-location reporting and citizen interviews.',
+      type: 'Historical News',
+      thumbnailSrc: '/video_images/v3.jpg',
+      metadata: {
+        date: '1989-11-09',
+        views: 210000,
+        format: 'Betacam',
+        tags: ['historical', 'cold war', 'germany'],
+        transcript: 'Full transcript available',
+        embeddings: 'Vector ID: berlin_wall_1989',
+        preservation: 'Digitized from Betacam master tape'
+      }
+    },
+    {
+      id: 4,
+      title: "Exploring the Deep Ocean (1985)",
+      href: '#',
+      duration: '52:00',
+      description: 'Groundbreaking documentary series on deep-sea exploration, featuring rare footage of deep-ocean creatures.',
+      type: 'Educational',
+      thumbnailSrc: '/video_images/v4.jpeg',
+      metadata: {
+        date: '1985-06-22',
+        views: 145000,
+        format: 'Betacam',
+        tags: ['science', 'ocean', 'documentary'],
+        transcript: 'Full transcript available',
+        embeddings: 'Vector ID: deep_ocean_1985',
+        preservation: 'Restored from original Betacam tapes'
+      }
+    },
+    {
+      id: 5,
+      title: "Computer Revolution (1982)",
+      href: '#',
+      duration: '45:00',
+      description: 'Special report on the emerging personal computer revolution, featuring interviews with tech pioneers.',
+      type: 'Documentary',
+      thumbnailSrc: '/video_images/v5.jpeg',
+      metadata: {
+        date: '1982-09-30',
+        views: 167000,
+        format: 'U-matic',
+        tags: ['technology', 'history', 'computers'],
+        transcript: 'Full transcript available',
+        embeddings: 'Vector ID: computer_rev_1982',
+        preservation: 'Digitized from U-matic tape'
+      }
+    }
+  ]
+};
+
+export default videoLibrary;

@@ -1,6 +1,5 @@
 'use client'
-
-import { Fragment, useState, useEffect } from 'react'
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogBackdrop,
@@ -12,342 +11,324 @@ import {
   PopoverButton,
   PopoverGroup,
   PopoverPanel,
-  Tab,
-  TabGroup,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Menu,
-  Transition
-} from '@headlessui/react'
-import { Bars3Icon, MagnifyingGlassIcon, ShoppingBagIcon, XMarkIcon, ChartBarIcon, ClockIcon, EyeIcon, TagIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
-import { ChevronDownIcon, PlusIcon } from '@heroicons/react/20/solid'
-import { videos as initialVideos } from '../../data/videos'
-import Link from 'next/link'
+} from '@headlessui/react';
+import { 
+  MagnifyingGlassIcon, 
+  XMarkIcon,
+  BookmarkIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/24/outline';
+import { 
+  Mic, 
+  Brain,
+  Film,
+  Clock,
+  Sparkles,
+  History,
+  PlayCircle,
+  LayoutGrid,
+  Wand2,
+  Calendar,
+  Layers,
+  MenuIcon,
+  Search
+} from 'lucide-react';
+import videoLibrary from '../../data/videos';
+import VideoCard from '../components/VideoCard';
+import LoadingAnimation from '../components/LoadingAnimation';
+import useVideoFilters from '../hooks/useVideoFilters';
 
-const navigation = {
-  categories: [
-    {
-      id: 'women',
-      name: 'Women',
-      featured: [
-        {
-          name: 'New Arrivals',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/plus-assets/img/ecommerce-images/mega-menu-category-01.jpg',
-          imageAlt: 'Models sitting back to back, wearing Basic Tee in black and bone.',
-        },
-        {
-          name: 'Basic Tees',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/plus-assets/img/ecommerce-images/mega-menu-category-02.jpg',
-          imageAlt: 'Close up of Basic Tee fall bundle with off-white, ochre, olive, and black tees.',
-        },
-      ],
-      sections: [
-        {
-          id: 'clothing',
-          name: 'Clothing',
-          items: [
-            { name: 'Tops', href: '#' },
-            { name: 'Dresses', href: '#' },
-            { name: 'Pants', href: '#' },
-            { name: 'Denim', href: '#' },
-            { name: 'Sweaters', href: '#' },
-            { name: 'T-Shirts', href: '#' },
-            { name: 'Jackets', href: '#' },
-            { name: 'Activewear', href: '#' },
-            { name: 'Browse All', href: '#' },
-          ],
-        },
-        {
-          id: 'accessories',
-          name: 'Accessories',
-          items: [
-            { name: 'Watches', href: '#' },
-            { name: 'Wallets', href: '#' },
-            { name: 'Bags', href: '#' },
-            { name: 'Sunglasses', href: '#' },
-            { name: 'Hats', href: '#' },
-            { name: 'Belts', href: '#' },
-          ],
-        },
-        {
-          id: 'brands',
-          name: 'Brands',
-          items: [
-            { name: 'Full Nelson', href: '#' },
-            { name: 'My Way', href: '#' },
-            { name: 'Re-Arranged', href: '#' },
-            { name: 'Counterfeit', href: '#' },
-            { name: 'Significant Other', href: '#' },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'men',
-      name: 'Men',
-      featured: [
-        {
-          name: 'New Arrivals',
-          href: '#',
-          imageSrc:
-            'https://tailwindui.com/plus-assets/img/ecommerce-images/product-page-04-detail-product-shot-01.jpg',
-          imageAlt: 'Drawstring top with elastic loop closure and textured interior padding.',
-        },
-        {
-          name: 'Artwork Tees',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/plus-assets/img/ecommerce-images/category-page-02-image-card-06.jpg',
-          imageAlt:
-            'Three shirts in gray, white, and blue arranged on table with same line drawing of hands and shapes overlapping on front of shirt.',
-        },
-      ],
-      sections: [
-        {
-          id: 'clothing',
-          name: 'Clothing',
-          items: [
-            { name: 'Tops', href: '#' },
-            { name: 'Pants', href: '#' },
-            { name: 'Sweaters', href: '#' },
-            { name: 'T-Shirts', href: '#' },
-            { name: 'Jackets', href: '#' },
-            { name: 'Activewear', href: '#' },
-            { name: 'Browse All', href: '#' },
-          ],
-        },
-        {
-          id: 'accessories',
-          name: 'Accessories',
-          items: [
-            { name: 'Watches', href: '#' },
-            { name: 'Wallets', href: '#' },
-            { name: 'Bags', href: '#' },
-            { name: 'Sunglasses', href: '#' },
-            { name: 'Hats', href: '#' },
-            { name: 'Belts', href: '#' },
-          ],
-        },
-        {
-          id: 'brands',
-          name: 'Brands',
-          items: [
-            { name: 'Re-Arranged', href: '#' },
-            { name: 'Counterfeit', href: '#' },
-            { name: 'Full Nelson', href: '#' },
-            { name: 'My Way', href: '#' },
-          ],
-        },
-      ],
-    },
-  ],
-  pages: [
-    { name: 'Company', href: '#' },
-    { name: 'Stores', href: '#' },
-  ],
-}
-const breadcrumbs = [{ id: 1, name: 'Men', href: '#' }]
-const filters = [
-  {
-    id: 'industry',
-    name: 'Industry',
-    options: [
-      { value: 'technology', label: 'Technology & Innovation' },
-      { value: 'sports', label: 'Sports & Entertainment' },
-      { value: 'business', label: 'Business & Finance' },
-      { value: 'science', label: 'Science & Education' },
-    ],
-  },
-  {
-    id: 'era',
-    name: 'Era',
-    options: [
-      { value: 'archive', label: 'Archive' },
-      { value: '2000s', label: '2000s' },
-      { value: '2010s', label: '2010s' },
-      { value: '2020s', label: '2020s' },
-    ],
-  },
-]
-const products = [
-  {
-    id: 1,
-    name: 'Basic Tee 8-Pack',
-    href: '#',
-    price: '$256',
-    description: 'Get the full lineup of our Basic Tees. Have a fresh shirt all week, and an extra for laundry day.',
-    options: '8 colors',
-    imageSrc: 'https://tailwindui.com/plus-assets/img/ecommerce-images/category-page-02-image-card-01.jpg',
-    imageAlt: 'Eight shirts arranged on table in black, olive, grey, blue, white, red, mustard, and green.',
-  },
-  {
-    id: 2,
-    name: 'Basic Tee',
-    href: '#',
-    price: '$32',
-    description: 'Look like a visionary CEO and wear the same black t-shirt every day.',
-    options: 'Black',
-    imageSrc: 'https://tailwindui.com/plus-assets/img/ecommerce-images/category-page-02-image-card-02.jpg',
-    imageAlt: 'Front of plain black t-shirt.',
-  },
-  // More products...
-]
-const footerNavigation = {
-  products: [
-    { name: 'Bags', href: '#' },
-    { name: 'Tees', href: '#' },
-    { name: 'Objects', href: '#' },
-    { name: 'Home Goods', href: '#' },
-    { name: 'Accessories', href: '#' },
-  ],
-  company: [
-    { name: 'Who we are', href: '#' },
-    { name: 'Sustainability', href: '#' },
-    { name: 'Press', href: '#' },
-    { name: 'Careers', href: '#' },
-    { name: 'Terms & Conditions', href: '#' },
-    { name: 'Privacy', href: '#' },
-  ],
-  customerService: [
-    { name: 'Contact', href: '#' },
-    { name: 'Shipping', href: '#' },
-    { name: 'Returns', href: '#' },
-    { name: 'Warranty', href: '#' },
-    { name: 'Secure Payments', href: '#' },
-    { name: 'FAQ', href: '#' },
-    { name: 'Find a store', href: '#' },
-  ],
-}
+export default function VideoPlatform() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+    const [isAiAssistantActive, setAiAssistantActive] = useState(false);
 
-const sortOptions = [
-  { name: 'Most Viewed', value: 'views', icon: EyeIcon },
-  { name: 'Monetization Potential', value: 'monetization', icon: ChartBarIcon },
-  { name: 'Duration', value: 'duration', icon: ClockIcon },
-]
+    // Use the video filters hook
+    const {
+      filteredVideos,
+      isLoading,
+      activeFilters,
+      searchQuery,
+      handleFilterChange,
+      handleSearch,
+    } = useVideoFilters(videoLibrary.videos);
 
-// This will be our landing page (/)
-export default function LandingPage() {
-  return (
-    <div className="bg-white">
-      <header className="absolute inset-x-0 top-0 z-50">
-        <nav className="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
-          <div className="flex lg:flex-1">
-            <Link href="/" className="-m-1.5 p-1.5">
-              <span className="sr-only">ChronoVault AI</span>
-              <img
-                className="h-12 w-auto"
-                src="/logo.png"
-                alt="ChronoVault AI"
-              />
-            </Link>
-          </div>
-          <div className="hidden lg:flex lg:gap-x-12">
-            <Link href="/library" className="text-sm font-semibold leading-6 text-gray-900">
-              Video Library
-            </Link>
-            <a href="#features" className="text-sm font-semibold leading-6 text-gray-900">
-              Features
-            </a>
-            <a href="#technology" className="text-sm font-semibold leading-6 text-gray-900">
-              Technology
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Project Info Banner */}
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white">
+          <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <span className="flex items-center text-sm">
+                <Brain className="h-4 w-4 mr-1" />
+                Amazon Bedrock
+              </span>
+              <span className="flex items-center text-sm">
+                <Sparkles className="h-4 w-4 mr-1" />
+                RAG System
+              </span>
+              <span className="flex items-center text-sm">
+                <History className="h-4 w-4 mr-1" />
+                Legacy Archives
+              </span>
+            </div>
+            <a href="#" className="text-sm hover:text-white/90">
+              View Documentation →
             </a>
           </div>
-        </nav>
-      </header>
+        </div>
 
-      <main>
-        {/* Hero Section */}
-        <div className="relative isolate pt-14">
-          <div className="py-24 sm:py-32 lg:pb-40">
-            <div className="mx-auto max-w-7xl px-6 lg:px-8">
-              <div className="mx-auto max-w-2xl text-center">
-                <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-                  ChronoVault AI
-                </h1>
-                <p className="mt-6 text-lg leading-8 text-gray-600">
-                  Unlocking the Value of Legacy Video Archives with AWS AI
-                </p>
-                <div className="mt-10 flex items-center justify-center gap-x-6">
-                  <Link
-                    href="/library"
-                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    View Demo Library
-                  </Link>
+        {/* Main Header */}
+        <header className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex h-16 justify-between items-center">
+              {/* Logo */}
+              <div className="flex items-center">
+                <MenuIcon className="h-6 w-6 text-gray-600 lg:hidden cursor-pointer" onClick={() => setMobileMenuOpen(true)} />
+                <div className="ml-4 text-2xl font-bold text-indigo-600">RCBC</div>
+              </div>
+
+              {/* Enhanced Search Bar - Always Visible */}
+              <div className="flex-1 max-w-2xl mx-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    className="w-full pl-10 pr-12 py-2 rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    placeholder="Search 50+ years of broadcast history..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                  />
+                  <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                  <div className="absolute right-2 top-1.5 flex items-center space-x-1">
+                    <button
+                      type="button"
+                      onClick={() => setAiAssistantActive(true)}
+                      className="p-1 hover:bg-gray-100 rounded-full"
+                      title="AI Assistant"
+                    >
+                      <Wand2 className="h-5 w-5 text-indigo-600" />
+                    </button>
+                  </div>
                 </div>
+              </div>
+
+              {/* Right Nav Items */}
+              <div className="flex items-center space-x-4">
+                <button className="hidden lg:flex items-center text-sm text-gray-600 hover:text-gray-900">
+                  <Calendar className="h-5 w-5 mr-1" />
+                  Timeline
+                </button>
+                <button className="hidden lg:flex items-center text-sm text-gray-600 hover:text-gray-900">
+                  <Layers className="h-5 w-5 mr-1" />
+                  Collections
+                </button>
+                <button className="flex items-center text-sm text-gray-600 hover:text-gray-900">
+                  <BookmarkIcon className="h-5 w-5" />
+                  <span className="ml-1 hidden lg:inline">Saved</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Quick Stats in a more compact design */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center">
+              <Film className="h-8 w-8 text-indigo-600" />
+              <div className="ml-3">
+                <p className="text-xs text-gray-500">Archive Size</p>
+                <p className="text-lg text-gray-800 font-semibold">238.3 hrs</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center">
+              <Clock className="h-8 w-8 text-purple-600" />
+              <div className="ml-3">
+                <p className="text-xs text-gray-500">Time Span</p>
+                <p className="text-lg text-gray-800 font-semibold">1960-2024</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center">
+              <Brain className="h-8 w-8 text-blue-600" />
+              <div className="ml-3">
+                <p className="text-xs text-gray-500">AI Coverage</p>
+                <p className="text-lg text-gray-800 font-semibold">100%</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center">
+              <LayoutGrid className="h-8 w-8 text-pink-600" />
+              <div className="ml-3">
+                <p className="text-xs text-gray-500">Categories</p>
+                <p className="text-lg text-gray-800 font-semibold">12</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Technology Stack Section */}
-        <div className="bg-white py-24 sm:py-32">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-2xl lg:text-center">
-              <h2 className="text-base font-semibold leading-7 text-indigo-600">Powered by AWS</h2>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                Advanced AI Video Processing
-              </p>
-              <p className="mt-6 text-lg leading-8 text-gray-600">
-                Leveraging Amazon Rekognition, RAG, and advanced AI services to transform historical footage into searchable, valuable assets.
-              </p>
-            </div>
-            <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-              <div className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-                {/* AWS Service Cards */}
-                <div className="flex flex-col">
-                  <div className="rounded-lg bg-gray-50 p-6">
-                    <h3 className="text-base font-semibold leading-7 text-gray-900">Amazon Rekognition</h3>
-                    <p className="mt-2 text-sm leading-6 text-gray-600">
-                      Automated scene detection, object recognition, and content analysis
-                    </p>
+        {/* Featured Collections - Compact Horizontal Scroll */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Featured Collections</h2>
+          <div className="flex overflow-x-auto pb-4 space-x-4 scrollbar-hide">
+            {videoLibrary.categories.map((category) => (
+              category.featured.map((item) => (
+                <div key={item.name} className="flex-none w-72 group">
+                  <div className="relative h-40 rounded-lg overflow-hidden">
+                    <img
+                      src={item.thumbnailSrc}
+                      alt={item.name}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-200"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
+                      <div className="p-4 text-white">
+                        <h3 className="font-medium text-sm">{item.name}</h3>
+                        <p className="text-xs text-gray-300 line-clamp-2 mt-1">{item.description}</p>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <PlayCircle className="w-12 h-12 text-white" />
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <div className="rounded-lg bg-gray-50 p-6">
-                    <h3 className="text-base font-semibold leading-7 text-gray-900">RAG Technology</h3>
-                    <p className="mt-2 text-sm leading-6 text-gray-600">
-                      Advanced retrieval and context-aware content understanding
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                  <div className="rounded-lg bg-gray-50 p-6">
-                    <h3 className="text-base font-semibold leading-7 text-gray-900">AI-Powered Search</h3>
-                    <p className="mt-2 text-sm leading-6 text-gray-600">
-                      Natural language search across video content and metadata
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              ))
+            ))}
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="bg-white">
-          <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
-            <div className="relative isolate overflow-hidden bg-gray-900 px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
-              <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Experience the Future of Video Archives
-              </h2>
-              <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-300">
-                Try our demo library to see how ChronoVault AI can transform your historical footage into searchable, valuable content.
-              </p>
-              <div className="mt-10 flex items-center justify-center gap-x-6">
-                <Link
-                  href="/library"
-                  className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-4 gap-6">
+            {/* Filters */}
+            <aside className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <h3 className="font-medium text-gray-900 mb-4">Filters</h3>
+                <div className="space-y-6">
+                  {videoLibrary.filters.map((section) => (
+                    <div key={section.name}>
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">{section.name}</h4>
+                      <div className="space-y-2">
+                        {section.options.map((option) => (
+                          <label key={option.value} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              checked={activeFilters[section.id]?.includes(option.value)}
+                              onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)}
+                            />
+                            <span className="ml-2 text-sm text-gray-600">{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            {/* Video Grid */}
+            <div className="lg:col-span-3">
+              <div className="relative min-h-[400px]">
+                {isLoading && <LoadingAnimation />}
+                
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredVideos.map((video) => (
+                    <div
+                      key={video.id}
+                      className="transform transition-all duration-300"
+                    >
+                      <VideoCard video={video} />
+                    </div>
+                  ))}
+                </div>
+
+                {filteredVideos.length === 0 && !isLoading && (
+                  <div className="text-center py-12">
+                    <LayoutGrid className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No videos found</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Try adjusting your filters or search terms
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </main>
+
+      {/* AI Assistant Dialog */}
+      <Dialog 
+        open={isAiAssistantActive} 
+        onClose={() => setAiAssistantActive(false)}
+        className="relative z-50"
+      >
+        <DialogBackdrop className="fixed inset-0 bg-black/30" />
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <DialogPanel className="mx-auto max-w-xl w-full rounded-xl bg-white p-6 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <div className="bg-indigo-100 rounded-lg p-2">
+                    <Brain className="h-6 w-6 text-indigo-600" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-lg font-medium text-gray-900">AI Archive Assistant</h3>
+                    <p className="text-sm text-gray-500">Powered by Amazon Bedrock</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setAiAssistantActive(false)}
+                  className="rounded-full p-2 hover:bg-gray-100"
                 >
-                  View Demo Library
-                </Link>
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
               </div>
-            </div>
+              
+              <div className="space-y-4">
+                <div className="relative">
+                <input
+                    type="text"
+                    className="w-full pl-10 pr-12 py-2 rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    placeholder="Search 50+ years of broadcast history..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    />
+                  <div className="absolute right-2 top-2 flex space-x-2">
+                    <button className="p-1 hover:bg-gray-100 rounded-full">
+                      <Mic className="h-5 w-5 text-indigo-600" />
+                    </button>
+                    <button className="p-1 hover:bg-gray-100 rounded-full">
+                      <Search className="h-5 w-5 text-indigo-600" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-2">Try asking:</p>
+                  <div className="space-y-2">
+                    {[
+                      "Find space exploration coverage from the 1960s",
+                      "Show me educational content about computers",
+                      "Historical footage of significant political events"
+                    ].map((suggestion, i) => (
+                      <button
+                        key={i}
+                        className="block w-full text-left text-sm text-gray-700 hover:bg-gray-100 p-2 rounded"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </DialogPanel>
           </div>
         </div>
-      </main>
+      </Dialog>
     </div>
-  )
+  );
 }
