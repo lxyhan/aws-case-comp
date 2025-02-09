@@ -1,38 +1,27 @@
-'use client'
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Database, FileSearch, Brain } from 'lucide-react';
 
-const LoadingAnimation = ({ message = "Processing request..." }) => {
+const LoadingAnimation = ({ message = "Processing with RAG..." }) => {
   return (
-    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
-      <div className="flex flex-col items-center max-w-sm mx-auto p-6">
-        {/* Primary Animation */}
-        <div className="relative">
-          {/* Outer ring */}
-          <div className="absolute inset-0 rounded-full border-4 border-indigo-100 animate-pulse"></div>
-          
-          {/* Middle ring */}
-          <div className="w-16 h-16 rounded-full border-4 border-transparent border-t-indigo-600 border-r-indigo-600 animate-spin"></div>
-          
-          {/* Inner content */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-indigo-600 animate-bounce" />
-          </div>
+    <div className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="flex flex-col items-center p-6 max-w-sm mx-auto">
+        {/* RAG Process Animation */}
+        <div className="flex items-center space-x-4 mb-4">
+          <Database className="w-6 h-6 text-blue-600 animate-pulse" />
+          <div className="h-px w-8 bg-gradient-to-r from-blue-600 to-purple-600 animate-expandWidth" />
+          <FileSearch className="w-6 h-6 text-purple-600 animate-pulse" />
+          <div className="h-px w-8 bg-gradient-to-r from-purple-600 to-green-600 animate-expandWidth" />
+          <Brain className="w-6 h-6 text-green-600 animate-pulse" />
         </div>
-
-        {/* Loading Message */}
-        <div className="mt-4 text-center">
-          <div className="text-sm font-medium text-gray-900">{message}</div>
-          <div className="mt-1 text-xs text-gray-500 flex items-center space-x-1">
-            <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-            <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-            <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce"></span>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mt-4 w-48 h-1 bg-gray-200 rounded-full overflow-hidden">
-          <div className="h-full bg-indigo-600 animate-progressBar"></div>
+        
+        {/* Message */}
+        <p className="text-sm font-medium text-gray-900 text-center">{message}</p>
+        
+        {/* Simple Progress Dots */}
+        <div className="flex space-x-2 mt-3">
+          <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" />
+          <div className="w-2 h-2 rounded-full bg-purple-600 animate-bounce [animation-delay:0.2s]" />
+          <div className="w-2 h-2 rounded-full bg-green-600 animate-bounce [animation-delay:0.4s]" />
         </div>
       </div>
     </div>

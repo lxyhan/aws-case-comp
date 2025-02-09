@@ -4,19 +4,10 @@ import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Popover,
-  PopoverButton,
-  PopoverGroup,
-  PopoverPanel,
 } from '@headlessui/react';
 import { 
-  MagnifyingGlassIcon, 
   XMarkIcon,
   BookmarkIcon,
-  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import { 
   Mic, 
@@ -37,11 +28,15 @@ import videoLibrary from '../../data/videos';
 import VideoCard from '../components/VideoCard';
 import LoadingAnimation from '../components/LoadingAnimation';
 import useVideoFilters from '../hooks/useVideoFilters';
+import SemanticSearchDialog from '../components/SemanticSearchDialog';
+import VideoGenerationDialog from '../components/VideoGenerationDialog';
+import Link from 'next/link';
+
 
 export default function VideoPlatform() {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
     const [isAiAssistantActive, setAiAssistantActive] = useState(false);
+    const [isSearchDialogOpen, setSearchDialogOpen] = useState(false);
+    const [isGenerateDialogOpen, setGenerateDialogOpen] = useState(false);
 
     // Use the video filters hook
     const {
@@ -88,30 +83,55 @@ export default function VideoPlatform() {
                 <div className="ml-4 text-2xl font-bold text-indigo-600">RCBC</div>
               </div>
 
-              {/* Enhanced Search Bar - Always Visible */}
-              <div className="flex-1 max-w-2xl mx-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    className="w-full pl-10 pr-12 py-2 rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                    placeholder="Search 50+ years of broadcast history..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                  />
-                  <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                  <div className="absolute right-2 top-1.5 flex items-center space-x-1">
-                    <button
-                      type="button"
-                      onClick={() => setAiAssistantActive(true)}
-                      className="p-1 hover:bg-gray-100 rounded-full"
-                      title="AI Assistant"
-                    >
-                      <Wand2 className="h-5 w-5 text-indigo-600" />
-                    </button>
+              <div className="flex-1 max-w-2xl mx-4 flex items-center space-x-4">
+                <div className="relative flex-1 group">
+                  {/* Search Container */}
+                  <div className="relative">
+                    {/* AI Badge */}
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                      <div className="flex items-center bg-indigo-50 rounded-full px-2 py-1">
+                        <Brain className="h-3.5 w-3.5 text-indigo-600" />
+                        <span className="ml-1 text-xs font-medium text-indigo-700 whitespace-nowrap">RAG Search</span>
+                      </div>
+                    </div>
+
+                    {/* Search Input */}
+                    <input
+                      type="text"
+                      className="w-full pl-32 pr-20 py-3 rounded-lg border-2 border-gray-200 bg-gray-50/50 
+                                focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:bg-white
+                                cursor-pointer hover:bg-white transition-colors"
+                      placeholder="Ask about our archives..."
+                      onClick={() => setSearchDialogOpen(true)}
+                      readOnly
+                    />
+
+                    {/* Right Icons */}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+                      <Sparkles className="h-4 w-4 text-indigo-400" />
+                      <Search className="h-5 w-5 text-gray-400" />
+                    </div>
+
+                    {/* Hover Tooltip */}
+                    <div className="absolute -bottom-8 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-xs text-gray-600 bg-white px-2 py-1 rounded shadow-sm border">
+                        AI-powered semantic search with Amazon Bedrock
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
+                {/* Generate Video Button */}
+                <Link
+                  href="/generate"
+                  className="flex items-center px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 
+                            text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 
+                            transition-all shadow-sm hover:shadow whitespace-nowrap"
+                >
+                  <Wand2 className="h-5 w-5 mr-2" />
+                  <span className="font-medium">Generate Video</span>
+                </Link>
+              </div>
               {/* Right Nav Items */}
               <div className="flex items-center space-x-4">
                 <button className="hidden lg:flex items-center text-sm text-gray-600 hover:text-gray-900">
@@ -260,75 +280,15 @@ export default function VideoPlatform() {
           </div>
         </main>
 
-      {/* AI Assistant Dialog */}
-      <Dialog 
-        open={isAiAssistantActive} 
-        onClose={() => setAiAssistantActive(false)}
-        className="relative z-50"
-      >
-        <DialogBackdrop className="fixed inset-0 bg-black/30" />
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
-            <DialogPanel className="mx-auto max-w-xl w-full rounded-xl bg-white p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
-                  <div className="bg-indigo-100 rounded-lg p-2">
-                    <Brain className="h-6 w-6 text-indigo-600" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-lg font-medium text-gray-900">AI Archive Assistant</h3>
-                    <p className="text-sm text-gray-500">Powered by Amazon Bedrock</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setAiAssistantActive(false)}
-                  className="rounded-full p-2 hover:bg-gray-100"
-                >
-                  <XMarkIcon className="h-5 w-5" />
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="relative">
-                <input
-                    type="text"
-                    className="w-full pl-10 pr-12 py-2 rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                    placeholder="Search 50+ years of broadcast history..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    />
-                  <div className="absolute right-2 top-2 flex space-x-2">
-                    <button className="p-1 hover:bg-gray-100 rounded-full">
-                      <Mic className="h-5 w-5 text-indigo-600" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-100 rounded-full">
-                      <Search className="h-5 w-5 text-indigo-600" />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-2">Try asking:</p>
-                  <div className="space-y-2">
-                    {[
-                      "Find space exploration coverage from the 1960s",
-                      "Show me educational content about computers",
-                      "Historical footage of significant political events"
-                    ].map((suggestion, i) => (
-                      <button
-                        key={i}
-                        className="block w-full text-left text-sm text-gray-700 hover:bg-gray-100 p-2 rounded"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </DialogPanel>
-          </div>
-        </div>
-      </Dialog>
+      {/* Dialogs */}
+      <SemanticSearchDialog 
+        isOpen={isSearchDialogOpen} 
+        onClose={() => setSearchDialogOpen(false)} 
+      />
+      <VideoGenerationDialog 
+        isOpen={isGenerateDialogOpen} 
+        onClose={() => setGenerateDialogOpen(false)} 
+      />
     </div>
   );
 }
