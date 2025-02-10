@@ -1,28 +1,186 @@
+'use client'
 import React, { useState, useEffect } from 'react';
 import { Brain, ArrowLeft, Wand2, Film, Sparkles, History, Check } from 'lucide-react';
 import Link from 'next/link';
 import videoLibrary from '../../data/videos';
 import GenerationStates from '../components/GenerationStates';
+import { findRelevantVideos, generateVideoAnalysis } from '../services/videoGenerationService';
 
 const VideoGenerationPage = () => {
-  const [prompt, setPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedVideos, setSelectedVideos] = useState([]);
+    const [prompt, setPrompt] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [selectedVideos, setSelectedVideos] = useState([]);
+    const [videoAnalysis, setVideoAnalysis] = useState(null);
+    const [activeTab, setActiveTab] = useState('sources'); // 'sources' or 'analysis'
+    
+    const handleGenerate = async () => {
+      if (!prompt.trim()) return;
+      
+      setIsGenerating(true);
+      
+      try {
+        // Find relevant videos
+        const relevantVideos = await findRelevantVideos(prompt, videoLibrary.videos);
+        setSelectedVideos(relevantVideos);
   
-  const handleGenerate = () => {
-    if (!prompt.trim()) return;
-    
-    // Randomly select 4-5 videos for the "source material"
-    const randomVideos = [...videoLibrary.videos]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 4);
-    setSelectedVideos(randomVideos);
-    setIsGenerating(true);
-    
-    setTimeout(() => {
-      setIsGenerating(false);
-    }, 8000);
-  };
+        // Simulate processing time
+        await new Promise(resolve => setTimeout(resolve, 8000));
+  
+        // Generate analysis
+        const analysis = await generateVideoAnalysis(prompt, relevantVideos);
+        setVideoAnalysis(analysis);
+      } catch (error) {
+        console.error('Generation error:', error);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+  
+    // Render the right panel content based on active tab
+    const renderRightPanel = () => {
+      return (
+        <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
+          {/* Tab Navigation */}
+          <div className="flex space-x-4 mb-6">
+            <button
+              onClick={() => setActiveTab('sources')}
+              className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors ${
+                activeTab === 'sources' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Source Material
+            </button>
+            <button
+              onClick={() => setActiveTab('analysis')}
+              className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors ${
+                activeTab === 'analysis' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              AI Analysis
+            </button>
+          </div>
+  
+          {activeTab === 'sources' ? (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-medium text-gray-900">Source Clips</h2>
+                {isGenerating && (
+                  <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+                    Analyzing
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-4">
+                {selectedVideos.map((video, index) => (
+                  <div 
+                    key={video.id}
+                    className={`relative rounded-lg overflow-hidden transition-all duration-300 ${
+                      isGenerating ? 'opacity-100 transform translate-y-0' : ''
+                    }`}
+                    style={{ transitionDelay: `${index * 150}ms` }}
+                  >
+                    <div className="relative aspect-video">
+                      <img
+                        src={video.thumbnailSrc}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                      />
+                      {isGenerating && (
+                        <div className="absolute inset-0 bg-indigo-500/10 flex items-center justify-center">
+                          <div className="bg-white/90 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600">
+                            Processing clip...
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 bg-gray-50">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">{video.title}</h3>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-xs text-gray-500">{video.duration}</p>
+                        {video.relevanceScore && (
+                          <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
+                            {(video.relevanceScore * 100).toFixed(0)}% match
+                          </span>
+                        )}
+                      </div>
+                      {isGenerating && (
+                        <div className="mt-2 h-1 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-indigo-600 transition-all duration-1000"
+                            style={{ 
+                              width: `${Math.random() * 100}%`,
+                              transitionDelay: `${index * 200}ms`
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+  
+                {selectedVideos.length === 0 && (
+                  <div className="text-center py-8">
+                    <Film className="mx-auto h-8 w-8 text-gray-400" />
+                    <p className="mt-2 text-sm text-gray-500">
+                      Source clips will appear here during generation
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-6">
+                {videoAnalysis ? (
+                  <>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900 mb-2">Description</h3>
+                      <p className="text-sm text-gray-600">{videoAnalysis.description}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900 mb-2">AI Insights</h3>
+                      <div className="space-y-2">
+                        {videoAnalysis.aiInsights.map((insight, index) => (
+                          <div 
+                            key={index}
+                            className="flex items-center space-x-2 text-sm text-gray-600"
+                          >
+                            <Check className="h-4 w-4 text-green-500" />
+                            <span>{insight}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+  
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900 mb-2">Generated Transcript</h3>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <pre className="text-sm text-gray-600 whitespace-pre-wrap">
+                          {videoAnalysis.transcript}
+                        </pre>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <Sparkles className="mx-auto h-8 w-8 text-gray-400" />
+                    <p className="mt-2 text-sm text-gray-500">
+                      Generate a video to see AI analysis
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      );
+    };  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -123,69 +281,8 @@ const VideoGenerationPage = () => {
             </div>
           </div>
 
-          {/* Source Videos Panel */}
           <div className="col-span-1">
-            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-gray-900">Source Material</h2>
-                {isGenerating && (
-                  <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
-                    Analyzing
-                  </span>
-                )}
-              </div>
-              
-              <div className="space-y-4">
-                {selectedVideos.map((video, index) => (
-                  <div 
-                    key={video.id}
-                    className={`relative rounded-lg overflow-hidden transition-all duration-300 ${
-                      isGenerating ? 'opacity-100 transform translate-y-0' : 'opacity-0 translate-y-4'
-                    }`}
-                    style={{ transitionDelay: `${index * 150}ms` }}
-                  >
-                    <div className="relative aspect-video">
-                      <img
-                        src={video.thumbnailSrc}
-                        alt={video.title}
-                        className="w-full h-full object-cover"
-                      />
-                      {isGenerating && (
-                        <div className="absolute inset-0 bg-indigo-500/10 flex items-center justify-center">
-                          <div className="bg-white/90 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600">
-                            Processing clip...
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3 bg-gray-50">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">{video.title}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{video.duration}</p>
-                      {isGenerating && (
-                        <div className="mt-2 h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-indigo-600 transition-all duration-1000"
-                            style={{ 
-                              width: `${Math.random() * 100}%`,
-                              transitionDelay: `${index * 200}ms`
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {!isGenerating && selectedVideos.length === 0 && (
-                  <div className="text-center py-8">
-                    <Film className="mx-auto h-8 w-8 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">
-                      Source clips will appear here during generation
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+                {renderRightPanel()}
           </div>
         </div>
       </main>

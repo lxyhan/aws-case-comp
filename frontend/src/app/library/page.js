@@ -1,6 +1,5 @@
 'use client'
-import React, { useState } from 'react';
-import {
+import React, { useState, useEffect } from 'react';import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
@@ -31,22 +30,47 @@ import useVideoFilters from '../hooks/useVideoFilters';
 import SemanticSearchDialog from '../components/SemanticSearchDialog';
 import VideoGenerationDialog from '../components/VideoGenerationDialog';
 import Link from 'next/link';
-
+import VideoModal from '../components/VideoModal';
 
 export default function VideoPlatform() {
-    const [isAiAssistantActive, setAiAssistantActive] = useState(false);
-    const [isSearchDialogOpen, setSearchDialogOpen] = useState(false);
-    const [isGenerateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [isSearchDialogOpen, setSearchDialogOpen] = useState(false);
+  const [isGenerateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [isVideoModalOpen, setVideoModalOpen] = useState(false);
+  const [apiVideos, setApiVideos] = useState([]); // Add this state
 
-    // Use the video filters hook
-    const {
-      filteredVideos,
-      isLoading,
-      activeFilters,
-      searchQuery,
-      handleFilterChange,
-      handleSearch,
-    } = useVideoFilters(videoLibrary.videos);
+  useEffect(() => {
+      async function fetchVideos() {
+          try {
+              const response = await fetch('/api/videos');
+              const data = await response.json();
+              setApiVideos(data.videos);
+          } catch (error) {
+              console.error('Error fetching videos:', error);
+          }
+      }
+      fetchVideos();
+  }, []);
+
+// Change this line
+const {
+  filteredVideos,
+  isLoading,
+  activeFilters,
+  searchQuery,
+  handleFilterChange,
+  handleSearch,
+} = useVideoFilters(apiVideos); // Changed from videoLibrary.videos to apiVideos
+    const handleOpenVideoModal = (video) => {
+      setSelectedVideo(video);
+      setVideoModalOpen(true);
+    };
+  
+    const handleCloseVideoModal = () => {
+      setVideoModalOpen(false);
+      setSelectedVideo(null);
+    };
+  
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -261,7 +285,10 @@ export default function VideoPlatform() {
                       key={video.id}
                       className="transform transition-all duration-300"
                     >
-                      <VideoCard video={video} />
+                      <VideoCard 
+                        video={video} 
+                        onOpenModal={handleOpenVideoModal}
+                      />
                     </div>
                   ))}
                 </div>
@@ -288,6 +315,11 @@ export default function VideoPlatform() {
       <VideoGenerationDialog 
         isOpen={isGenerateDialogOpen} 
         onClose={() => setGenerateDialogOpen(false)} 
+      />
+      <VideoModal
+        video={selectedVideo}
+        isOpen={isVideoModalOpen}
+        onClose={handleCloseVideoModal}
       />
     </div>
   );
