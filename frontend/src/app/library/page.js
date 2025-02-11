@@ -32,6 +32,7 @@ import VideoGenerationDialog from '../components/VideoGenerationDialog';
 import Link from 'next/link';
 import VideoModal from '../components/VideoModal';
 import VideoIngestionCard from '../components/VideoIngestionCard';
+import { motion } from 'framer-motion';
 
 export default function VideoPlatform() {
   const [isSearchDialogOpen, setSearchDialogOpen] = useState(false);
@@ -258,6 +259,19 @@ const calculateStats = () => {
   };
 };
 
+// Add this component for animated numbers
+const AnimatedNumber = ({ value, suffix = '' }) => {
+  return (
+    <motion.span
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="text-lg font-semibold text-gray-700"
+    >
+      {value}{suffix}
+    </motion.span>
+  );
+};
 const stats = calculateStats();
 
     return (
@@ -356,44 +370,96 @@ const stats = calculateStats();
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats in a more compact design */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center">
-              <Film className="h-8 w-8 text-indigo-600" />
-              <div className="ml-3">
-                <p className="text-xs text-gray-500">Archive Size</p>
-                <p className="text-lg text-gray-800 font-semibold">{stats.archiveSize}</p>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+        >
+          {[
+            {
+              icon: Film,
+              color: "indigo",
+              label: "Archive Size",
+              value: stats.archiveSize,
+              gradient: "from-indigo-500 to-blue-500",
+              delay: 0
+            },
+            {
+              icon: Clock,
+              color: "indigo",
+              label: "Time Span",
+              value: stats.timeSpan,
+              gradient: "from-purple-500 to-pink-500",
+              delay: 0.1
+            },
+            {
+              icon: Brain,
+              color: "indigo",
+              label: "AI Coverage",
+              value: stats.aiCoverage,
+              gradient: "from-blue-500 to-cyan-500",
+              delay: 0.2
+            },
+            {
+              icon: LayoutGrid,
+              color: "indigo",
+              label: "Categories",
+              value: stats.categories,
+              gradient: "from-pink-500 to-rose-500",
+              delay: 0.3
+            }
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: stat.delay }}
+              whileHover={{ scale: 1.02 }} // Subtler hover scale
+              className={`relative overflow-hidden bg-white rounded-xl p-6 shadow-lg
+                          hover:shadow-xl transition-all duration-300 group`}
+            >
+              {/* Background gradient effect */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} 
+                              opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+              
+              <div className="relative flex items-center">
+                <div className={`flex items-center justify-center w-12 h-12 rounded-lg 
+                                border-2 border-${stat.color}-200 bg-${stat.color}-50
+                                group-hover:border-${stat.color}-300 
+                                transition-colors duration-300`}
+                >
+                  <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
+                </div>
+                
+                <div className="ml-4 flex-1">
+                  <p className="text-sm text-gray-700 font-medium mb-1">{stat.label}</p>
+                  <div className="flex items-baseline">
+                    <AnimatedNumber value={stat.value} />
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: stat.delay + 0.3 }}
+                      className="ml-2 text-xs font-medium text-gray-700"
+                    >
+                      {index === 0 && "of content"}
+                      {index === 1 && "years"}
+                      {index === 2 && "processed"}
+                      {index === 3 && "total"}
+                    </motion.div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center">
-              <Clock className="h-8 w-8 text-purple-600" />
-              <div className="ml-3">
-                <p className="text-xs text-gray-500">Time Span</p>
-                <p className="text-lg text-gray-800 font-semibold">{stats.timeSpan}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center">
-              <Brain className="h-8 w-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-xs text-gray-500">AI Coverage</p>
-                <p className="text-lg text-gray-800 font-semibold">{stats.aiCoverage}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center">
-              <LayoutGrid className="h-8 w-8 text-pink-600" />
-              <div className="ml-3">
-                <p className="text-xs text-gray-500">Categories</p>
-                <p className="text-lg text-gray-800 font-semibold">{stats.categories}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+
+              {/* Optional: Add subtle animation lines */}
+              <motion.div
+                className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r ${stat.gradient}`}
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 1, delay: stat.delay }}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
 
         {/* Featured Collections - Compact Horizontal Scroll */}
         <div className="mb-8">

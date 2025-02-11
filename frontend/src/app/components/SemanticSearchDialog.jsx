@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { Brain, Search, Sparkles, Database, Code, Wand2 } from 'lucide-react';
+import { Brain, Search, Sparkles, Database, CheckCircle, Code, Wand2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SemanticSearchDialog = ({ isOpen, onClose, onSearch }) => {
@@ -10,30 +10,53 @@ const SemanticSearchDialog = ({ isOpen, onClose, onSearch }) => {
   const [searchStage, setSearchStage] = useState(0);
   
   const searchStages = [
-    { icon: Brain, text: "Processing natural language...", color: "text-blue-500" },
-    { icon: Database, text: "Searching video archives...", color: "text-purple-500" },
-    { icon: Code, text: "Computing semantic relevance...", color: "text-indigo-500" },
-    { icon: Wand2, text: "Generating results...", color: "text-green-500" }
+    { 
+      icon: Brain, 
+      text: "Processing natural language query...", 
+      color: "text-blue-500",
+      detail: "Analyzing semantic context and intent"
+    },
+    { 
+      icon: Database, 
+      text: "Searching historical archives...", 
+      color: "text-purple-500",
+      detail: "Scanning through decades of footage"
+    },
+    { 
+      icon: Code, 
+      text: "Computing relevance scores...", 
+      color: "text-indigo-500",
+      detail: "Matching content with semantic vectors"
+    },
+    { 
+      icon: Wand2, 
+      text: "Curating results...", 
+      color: "text-green-500",
+      detail: "Organizing findings by relevance"
+    }
   ];
-
+  
+  // Enhanced search animation sequence
   const handleSearch = async (query) => {
     setSearchQuery(query);
     setIsSearching(true);
     
-    // Simulate staged search process
+    // Longer, more detailed search process
     for (let i = 0; i < searchStages.length; i++) {
       setSearchStage(i);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Vary the timing for each stage
+      await new Promise(resolve => setTimeout(resolve, 1000 + (i * 500)));
     }
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      onSearch(query);
-      onClose();
-    } finally {
-      setIsSearching(false);
-      setSearchStage(0);
-    }
+  
+    // Final processing before showing results
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    onSearch(query);
+    
+    // Smooth transition out
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setIsSearching(false);
+    setSearchStage(0);
+    onClose();
   };
 
   // Reset stages when dialog closes
@@ -138,8 +161,12 @@ const SemanticSearchDialog = ({ isOpen, onClose, onSearch }) => {
 
                 {/* Search Stages Animation */}
                 {isSearching && (
-                  <div className="absolute -bottom-24 left-0 right-0 bg-white rounded-lg shadow-lg p-4">
-                    <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute left-0 right-0 mt-4 mx-auto max-w-md bg-white rounded-xl shadow-2xl p-6 border border-gray-100 z-50"
+                  >
+                    <div className="space-y-3">
                       {searchStages.map((stage, index) => {
                         const Icon = stage.icon;
                         const isActive = index === searchStage;
@@ -148,43 +175,92 @@ const SemanticSearchDialog = ({ isOpen, onClose, onSearch }) => {
                         return (
                           <motion.div
                             key={index}
-                            initial={{ opacity: 0, x: -20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ 
-                              opacity: isActive || isPast ? 1 : 0.5,
-                              x: 0,
-                              scale: isActive ? 1.02 : 1
+                              opacity: isActive || isPast ? 1 : 0.4,
+                              y: 0
                             }}
-                            className="flex items-center space-x-2"
+                            className={`relative ${isActive ? 'bg-gray-50 rounded-lg p-3' : 'p-2'}`}
                           >
-                            <motion.div
-                              animate={isActive ? {
-                                rotate: [0, 360],
-                                scale: [1, 1.1, 1]
-                              } : {}}
-                              transition={{ duration: 1, repeat: Infinity }}
-                              className={`${stage.color} ${isPast ? 'opacity-50' : ''}`}
-                            >
-                              <Icon className="h-4 w-4" />
-                            </motion.div>
-                            <span className={`text-sm ${isActive ? stage.color : 'text-gray-500'}`}>
-                              {stage.text}
-                            </span>
+                            <div className="flex items-center space-x-3">
+                              <motion.div
+                                animate={isActive ? {
+                                  rotate: [0, 360],
+                                  scale: [1, 1.1, 1]
+                                } : {}}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                className={`${stage.color} ${isPast ? 'opacity-75' : ''} 
+                                          p-2 rounded-lg bg-white shadow-sm`}
+                              >
+                                <Icon className="h-4 w-4" />
+                              </motion.div>
+                              
+                              <div className="flex-1 min-w-0"> {/* Add min-w-0 to prevent text overflow */}
+                                <p className={`text-sm font-medium truncate ${
+                                  isActive ? stage.color : 'text-gray-600'
+                                }`}>
+                                  {stage.text}
+                                </p>
+                                
+                                {isActive && (
+                                  <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="mt-2"
+                                  >
+                                    <p className="text-xs text-gray-500 mb-2">{stage.detail}</p>
+                                    <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+                                      <motion.div
+                                        initial={{ width: "0%" }}
+                                        animate={{ width: "100%" }}
+                                        transition={{ duration: 1.5 }}
+                                        className={`h-full ${stage.color.replace('text', 'bg')}`}
+                                      />
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </div>
+
+                              {isPast && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  className="flex-shrink-0 text-green-500"
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </motion.div>
+                              )}
+                            </div>
                           </motion.div>
                         );
                       })}
                     </div>
-                  </div>
+
+                    {/* Final processing message */}
+                    {searchStage === searchStages.length - 1 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="mt-4 text-center text-sm text-gray-500"
+                      >
+                        Preparing your results...
+                      </motion.div>
+                    )}
+                  </motion.div>
                 )}
+
+
               </div>
 
               {/* Suggestions */}
               <AnimatePresence>
                 {!isSearching && (
-                  <motion.div
+                    <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="bg-gray-50 rounded-lg p-4"
+                    className="mt-4 bg-gray-50 rounded-lg p-4"
                   >
                     <p className="text-sm text-gray-600 mb-3">Popular searches:</p>
                     <div className="space-y-2">
