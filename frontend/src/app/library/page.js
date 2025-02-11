@@ -44,8 +44,13 @@ export default function VideoPlatform() {
   const [newVideo, setNewVideo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilters, setActiveFilters] = useState({});
-  const [searchResults, setSearchResults] = useState(null);
+  const [activeFilters, setActiveFilters] = useState({
+    decade: [],
+    format: [],
+    type: []
+  });
+    const [searchResults, setSearchResults] = useState(null);
+  
 
   const MOCK_SEARCH_RESPONSES = {
     'arctic': {
@@ -153,6 +158,7 @@ const handleSemanticSearch = async (query) => {
 
 const videosToDisplay = searchResults || apiVideos;
 
+// Update handleFilterChange
 const handleFilterChange = (filterId, value, isChecked) => {
   setActiveFilters(prev => ({
     ...prev,
@@ -162,41 +168,27 @@ const handleFilterChange = (filterId, value, isChecked) => {
   }));
 };
 
-// Filter videos based on search and filters
 const filteredVideos = apiVideos.filter(video => {
-  // Search term filter
-  if (searchTerm) {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = 
-      video.title.toLowerCase().includes(searchLower) ||
-      video.description.toLowerCase().includes(searchLower) ||
-      video.type.toLowerCase().includes(searchLower) ||
-      video.metadata?.tags?.some(tag => tag.toLowerCase().includes(searchLower));
-    
-    if (!matchesSearch) return false;
-  }
-
-  // Active filters
   for (const [filterId, values] of Object.entries(activeFilters)) {
-    if (values.length === 0) continue;
+    if (!values || values.length === 0) continue;
 
     switch (filterId) {
       case 'type':
-        if (!values.includes(video.type)) return false;
+        if (!video.type || !values.includes(video.type)) return false;
         break;
-      case 'year':
-        const videoYear = new Date(video.metadata.date).getFullYear();
-        if (!values.includes(videoYear.toString())) return false;
+      case 'format':
+        if (!video.metadata?.format || !values.includes(video.metadata.format)) return false;
         break;
-      case 'tags':
-        if (!values.some(tag => video.metadata.tags.includes(tag))) return false;
+      case 'decade':
+        const year = new Date(video.metadata?.date).getFullYear();
+        const decade = `${Math.floor(year / 10) * 10}s`;
+        if (!values.includes(decade)) return false;
         break;
-      // Add more filter cases as needed
     }
   }
-
   return true;
 });
+
 
 const SearchResults = ({ results }) => {
   if (!results) return null;
@@ -240,6 +232,33 @@ const handleCloseVideoModal = () => {
   setVideoModalOpen(false);
   setSelectedVideo(null);
 };
+
+const calculateStats = () => {
+  const totalDuration = apiVideos.reduce((total, video) => {
+    const [minutes] = video.duration.split(':').map(Number);
+    return total + minutes;
+  }, 0);
+
+  const years = apiVideos.map(video => 
+    new Date(video.metadata?.date).getFullYear()
+  ).filter(Boolean);
+
+  const timeSpan = years.length > 0 ? {
+    start: Math.min(...years),
+    end: Math.max(...years)
+  } : { start: 1970, end: 1989 };
+
+  const uniqueCategories = new Set(apiVideos.map(video => video.type));
+
+  return {
+    archiveSize: `${(totalDuration / 60).toFixed(1)} hrs`,
+    timeSpan: `${timeSpan.start}-${timeSpan.end}`,
+    aiCoverage: '100%',
+    categories: uniqueCategories.size
+  };
+};
+
+const stats = calculateStats();
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -290,13 +309,14 @@ const handleCloseVideoModal = () => {
                       <input
                         type="text"
                         className="w-full pl-28 pr-12 py-2.5 rounded-lg border-2 border-gray-200 
-                                  bg-gray-50/50 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 
-                                  focus:bg-white transition-colors"
+                                    bg-gray-50/50 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 
+                                    focus:bg-white transition-colors"
                         placeholder="Search video archives..."
-                        value={searchTerm}
+                        value={searchTerm || ''} // Ensure value is never undefined
                         onClick={() => setSearchDialogOpen(true)}
                         readOnly
                       />
+
                     <div className="absolute right-3 flex items-center space-x-2">
                       <Sparkles className="h-4 w-4 text-indigo-400" />
                       <Search className="h-5 w-5 text-gray-400" />
@@ -342,7 +362,7 @@ const handleCloseVideoModal = () => {
               <Film className="h-8 w-8 text-indigo-600" />
               <div className="ml-3">
                 <p className="text-xs text-gray-500">Archive Size</p>
-                <p className="text-lg text-gray-800 font-semibold">238.3 hrs</p>
+                <p className="text-lg text-gray-800 font-semibold">{stats.archiveSize}</p>
               </div>
             </div>
           </div>
@@ -351,7 +371,7 @@ const handleCloseVideoModal = () => {
               <Clock className="h-8 w-8 text-purple-600" />
               <div className="ml-3">
                 <p className="text-xs text-gray-500">Time Span</p>
-                <p className="text-lg text-gray-800 font-semibold">1960-2024</p>
+                <p className="text-lg text-gray-800 font-semibold">{stats.timeSpan}</p>
               </div>
             </div>
           </div>
@@ -360,7 +380,7 @@ const handleCloseVideoModal = () => {
               <Brain className="h-8 w-8 text-blue-600" />
               <div className="ml-3">
                 <p className="text-xs text-gray-500">AI Coverage</p>
-                <p className="text-lg text-gray-800 font-semibold">100%</p>
+                <p className="text-lg text-gray-800 font-semibold">{stats.aiCoverage}</p>
               </div>
             </div>
           </div>
@@ -369,7 +389,7 @@ const handleCloseVideoModal = () => {
               <LayoutGrid className="h-8 w-8 text-pink-600" />
               <div className="ml-3">
                 <p className="text-xs text-gray-500">Categories</p>
-                <p className="text-lg text-gray-800 font-semibold">12</p>
+                <p className="text-lg text-gray-800 font-semibold">{stats.categories}</p>
               </div>
             </div>
           </div>
@@ -417,14 +437,15 @@ const handleCloseVideoModal = () => {
                       <div className="space-y-2">
                         {section.options.map((option) => (
                           <label key={option.value} className="flex items-center">
-                            <input
-                              type="checkbox"
-                              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                              checked={activeFilters[section.id]?.includes(option.value)}
-                              onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)}
-                            />
-                            <span className="ml-2 text-sm text-gray-600">{option.label}</span>
-                          </label>
+                              <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                checked={activeFilters[section.id]?.includes(option.value) ?? false}
+                                onChange={(e) => handleFilterChange(section.id, option.value, e.target.checked)}
+                              />
+                              <span className="ml-2 text-sm text-gray-600">{option.label}</span>
+                            </label>
+
                         ))}
                       </div>
                     </div>

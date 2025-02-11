@@ -1,16 +1,15 @@
 // videoMetadata.js
-
 export const VIDEO_METADATA = {
     'River.mp4': {
-      title: 'Indigenous River Life',
-      description: 'An immersive journey following indigenous tribe members as they navigate daily life along a remote river in the rainforest. The footage captures traditional activities including canoeing, fishing with spears, and cooking.',
+      title: 'Native American River Traditions (1978)',
+      description: 'Rare documentary footage capturing indigenous life along the Columbia River. Shot on 16mm film as part of the Cultural Heritage Preservation Project.',
       type: 'Cultural Documentary',
       duration: '15:30',
       thumbnailSrc: '/video_images/v1.jpg',
       metadata: {
-        date: '2024-01-20',
-        format: 'HD',
-        tags: ['indigenous', 'river', 'traditional fishing', 'culture', 'daily life'],
+        date: '1978-06-15',
+        format: '16mm Film',
+        tags: ['indigenous', 'cultural heritage', 'traditional practices', '1970s'],
         processedBy: {
           bedrock: true,
           rekognition: true,
@@ -19,22 +18,23 @@ export const VIDEO_METADATA = {
         aiAnalysis: {
           averageConfidence: 0.92,
           detectedObjects: [
-            'River', 'Boat', 'People', 'Fish', 'Trees', 'Water', 'Traditional Tools'
-          ]
+            'River', 'Boat', 'People', 'Fish', 'Traditional Tools'
+          ],
+          preservation: 'Digitized from original 16mm film reels'
         }
       }
     },
   
     'Arctic_Ice.mp4': {
-      title: 'Arctic Ice: A Vanishing World',
-      description: 'Dramatic footage of Arctic ice sheets showing the impact of climate change. Time-lapse sequences reveal seasonal changes and the increasing rate of ice melt in the polar regions.',
-      type: 'Environmental Documentary',
+      title: 'Arctic Expedition Documentary (1983)',
+      description: 'Groundbreaking footage from the International Arctic Research expedition, captured on Betacam. One of the earliest comprehensive studies of polar ice conditions.',
+      type: 'Scientific Documentary',
       duration: '12:45',
       thumbnailSrc: '/video_images/arctic_ice.jpg',
       metadata: {
-        date: '2024-01-15',
-        format: '4K',
-        tags: ['arctic', 'climate change', 'ice sheets', 'global warming', 'environment'],
+        date: '1983-03-15',
+        format: 'Betacam',
+        tags: ['arctic', 'scientific research', '1980s', 'climate studies'],
         processedBy: {
           bedrock: true,
           rekognition: true,
@@ -43,26 +43,23 @@ export const VIDEO_METADATA = {
         aiAnalysis: {
           averageConfidence: 0.95,
           detectedObjects: [
-            'Ice', 'Snow', 'Water', 'Sky', 'Glacier', 'Ocean', 'Icebergs'
+            'Ice', 'Snow', 'Research Equipment', 'Scientists', 'Research Station'
           ],
-          climateData: {
-            temperatureChange: '+2.1°C',
-            iceReduction: '15% annually'
-          }
+          preservation: 'Restored from original Betacam tapes'
         }
       }
     },
   
     'Factory.mp4': {
-      title: 'Modern Manufacturing: The Digital Revolution',
-      description: 'An inside look at a state-of-the-art manufacturing facility showcasing automation, robotics, and AI-driven production processes. Highlights the intersection of traditional manufacturing and cutting-edge technology.',
-      type: 'Industrial Technology',
+      title: 'American Industrial Revolution (1975)',
+      description: 'Inside look at automotive manufacturing during the height of American industrial production. Shot on U-matic video for educational broadcast.',
+      type: 'Industrial Documentary',
       duration: '18:20',
       thumbnailSrc: '/video_images/factory.jpg',
       metadata: {
-        date: '2024-01-18',
-        format: 'HD',
-        tags: ['manufacturing', 'automation', 'industry 4.0', 'robotics', 'AI', 'technology'],
+        date: '1975-09-20',
+        format: 'U-matic',
+        tags: ['manufacturing', 'industry', '1970s', 'automotive'],
         processedBy: {
           bedrock: true,
           rekognition: true,
@@ -71,27 +68,23 @@ export const VIDEO_METADATA = {
         aiAnalysis: {
           averageConfidence: 0.98,
           detectedObjects: [
-            'Robots', 'Assembly Line', 'Machinery', 'Workers', 'Control Panels', 
-            'Computer Screens', 'Manufacturing Equipment'
+            'Assembly Line', 'Factory Workers', 'Machinery', 'Vehicles'
           ],
-          industrialMetrics: {
-            automationLevel: 'High',
-            productionEfficiency: '94%'
-          }
+          preservation: 'Digitized from U-matic master tape'
         }
       }
     },
   
     'Polar_Bears.mp4': {
-      title: 'Polar Bears: Sentinels of Climate Change',
-      description: 'Intimate footage of polar bears in their natural habitat, highlighting their hunting patterns, family dynamics, and the challenges they face due to shrinking ice coverage. Includes rare scenes of cubs learning survival skills.',
+      title: 'Wildlife of the Arctic (1979)',
+      description: 'Award-winning nature documentary featuring unprecedented polar bear footage. Originally broadcast as part of the "World of Nature" series.',
       type: 'Wildlife Documentary',
       duration: '20:15',
       thumbnailSrc: '/video_images/polar_bears.jpg',
       metadata: {
-        date: '2024-01-22',
-        format: '4K',
-        tags: ['polar bears', 'arctic wildlife', 'climate change', 'conservation', 'endangered species'],
+        date: '1979-11-30',
+        format: '16mm Film',
+        tags: ['wildlife', 'arctic', '1970s', 'nature documentary'],
         processedBy: {
           bedrock: true,
           rekognition: true,
@@ -100,14 +93,11 @@ export const VIDEO_METADATA = {
         aiAnalysis: {
           averageConfidence: 0.96,
           detectedObjects: [
-            'Polar Bear', 'Snow', 'Ice', 'Arctic Fox', 'Seals', 'Ocean', 'Cubs'
+            'Polar Bear', 'Arctic Landscape', 'Snow', 'Ice Floes'
           ],
-          wildlifeData: {
-            behaviorType: 'Hunting/Nurturing',
-            habitatStatus: 'Threatened',
-            populationTrend: 'Declining'
-          }
+          preservation: 'Restored from original 16mm film prints'
         }
       }
     }
   };
+  

@@ -80,40 +80,36 @@ const videoLibrary = {
       ],
     },
   ],
+  // Updated filters to match the historical theme
   filters: [
     {
       id: 'decade',
       name: 'Decade',
       options: [
-        { value: '1960s', label: '1960s' },
         { value: '1970s', label: '1970s' },
         { value: '1980s', label: '1980s' },
-        { value: '1990s', label: '1990s' },
-        { value: '2000s', label: '2000s' },
-      ],
+        { value: '1990s', label: '1990s' }
+      ]
     },
     {
       id: 'format',
       name: 'Original Format',
       options: [
-        { value: 'film', label: '16mm Film' },
-        { value: 'umatic', label: 'U-matic' },
-        { value: 'betacam', label: 'Betacam' },
-        { value: 'vhs', label: 'VHS' },
-        { value: 'betacamsp', label: 'Betacam SP' },
-      ],
+        { value: '16mm Film', label: '16mm Film' },
+        { value: 'U-matic', label: 'U-matic' },
+        { value: 'Betacam', label: 'Betacam' }
+      ]
     },
     {
       id: 'type',
-      name: 'Content Type',
+      name: 'Program Type',
       options: [
-        { value: 'news', label: 'News Coverage' },
-        { value: 'documentary', label: 'Documentary' },
-        { value: 'educational', label: 'Educational' },
-        { value: 'cultural', label: 'Cultural Program' },
-        { value: 'scientific', label: 'Scientific Content' },
-      ],
-    },
+        { value: 'Scientific Documentary', label: 'Scientific' },
+        { value: 'Cultural Documentary', label: 'Cultural' },
+        { value: 'Industrial Documentary', label: 'Industrial' },
+        { value: 'Wildlife Documentary', label: 'Wildlife' }
+      ]
+    }
   ],
   videos: [
     {
