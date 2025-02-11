@@ -31,46 +31,215 @@ import SemanticSearchDialog from '../components/SemanticSearchDialog';
 import VideoGenerationDialog from '../components/VideoGenerationDialog';
 import Link from 'next/link';
 import VideoModal from '../components/VideoModal';
+import VideoIngestionCard from '../components/VideoIngestionCard';
 
 export default function VideoPlatform() {
   const [isSearchDialogOpen, setSearchDialogOpen] = useState(false);
   const [isGenerateDialogOpen, setGenerateDialogOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [isVideoModalOpen, setVideoModalOpen] = useState(false);
-  const [apiVideos, setApiVideos] = useState([]); // Add this state
+  const [apiVideos, setApiVideos] = useState([]);
+  const [isIngesting, setIsIngesting] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [newVideo, setNewVideo] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilters, setActiveFilters] = useState({});
+  const [searchResults, setSearchResults] = useState(null);
+
+  const MOCK_SEARCH_RESPONSES = {
+    'arctic': {
+      relevance: 0.95,
+      matches: [
+        'Arctic_Ice.mp4',
+        'Polar_Bears.mp4'
+      ],
+      suggestedTags: ['climate change', 'wildlife', 'environmental']
+    },
+    'factory': {
+      relevance: 0.88,
+      matches: [
+        'Factory.mp4'
+      ],
+      suggestedTags: ['industrial', 'manufacturing', 'technology']
+    },
+    'river': {
+      relevance: 0.92,
+      matches: [
+        'River.mp4'
+      ],
+      suggestedTags: ['nature', 'indigenous', 'cultural']
+    }
+  };
 
   useEffect(() => {
-      async function fetchVideos() {
-          try {
-              const response = await fetch('/api/videos');
-              const data = await response.json();
-              setApiVideos(data.videos);
-          } catch (error) {
-              console.error('Error fetching videos:', error);
-          }
+    async function fetchVideos() {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/videos');
+        const data = await response.json();
+        
+        setApiVideos(data.videos);
+        
+        if (data.processingVideo) {
+          setNewVideo(data.processingVideo);
+          setIsIngesting(true);
+          
+          setTimeout(() => {
+            setIsIngesting(false);
+            // Check if video already exists before adding
+            setApiVideos(prev => {
+              const exists = prev.some(v => v.id === data.processingVideo.id);
+              return exists ? prev : [data.processingVideo, ...prev];
+            });
+          }, 8000);
+        }
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+      } finally {
+        setTimeout(() => setIsLoading(false), 1000);
       }
-      fetchVideos();
+    }
+    fetchVideos();
   }, []);
 
-// Change this line
-const {
-  filteredVideos,
-  isLoading,
-  activeFilters,
-  searchQuery,
-  handleFilterChange,
-  handleSearch,
-} = useVideoFilters(apiVideos); // Changed from videoLibrary.videos to apiVideos
-    const handleOpenVideoModal = (video) => {
-      setSelectedVideo(video);
-      setVideoModalOpen(true);
-    };
-  
-    const handleCloseVideoModal = () => {
-      setVideoModalOpen(false);
-      setSelectedVideo(null);
-    };
-  
+const handleSemanticSearch = async (query) => {
+  setSearchLoading(true);
+  setSearchTerm(query);
+
+  try {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Find matching mock response based on keywords
+    const matchingKeyword = Object.keys(MOCK_SEARCH_RESPONSES).find(
+      keyword => query.toLowerCase().includes(keyword.toLowerCase())
+    );
+
+    if (matchingKeyword) {
+      const mockResponse = MOCK_SEARCH_RESPONSES[matchingKeyword];
+      
+      // Filter videos based on mock response
+      const results = apiVideos.filter(video => 
+        mockResponse.matches.includes(video.id)
+      );
+
+      setSearchResults({
+        videos: results,
+        metadata: {
+          relevance: mockResponse.relevance,
+          suggestedTags: mockResponse.suggestedTags,
+          totalResults: results.length,
+          searchTime: '0.67 seconds'
+        }
+      });
+    } else {
+      // Default "no exact match" response
+      setSearchResults({
+        videos: [],
+        metadata: {
+          relevance: 0,
+          suggestedTags: [],
+          totalResults: 0,
+          searchTime: '0.54 seconds'
+        }
+      });
+    }
+  } finally {
+    setSearchLoading(false);
+  }
+};
+
+
+const videosToDisplay = searchResults || apiVideos;
+
+const handleFilterChange = (filterId, value, isChecked) => {
+  setActiveFilters(prev => ({
+    ...prev,
+    [filterId]: isChecked
+      ? [...(prev[filterId] || []), value]
+      : (prev[filterId] || []).filter(v => v !== value)
+  }));
+};
+
+// Filter videos based on search and filters
+const filteredVideos = apiVideos.filter(video => {
+  // Search term filter
+  if (searchTerm) {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = 
+      video.title.toLowerCase().includes(searchLower) ||
+      video.description.toLowerCase().includes(searchLower) ||
+      video.type.toLowerCase().includes(searchLower) ||
+      video.metadata?.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+    
+    if (!matchesSearch) return false;
+  }
+
+  // Active filters
+  for (const [filterId, values] of Object.entries(activeFilters)) {
+    if (values.length === 0) continue;
+
+    switch (filterId) {
+      case 'type':
+        if (!values.includes(video.type)) return false;
+        break;
+      case 'year':
+        const videoYear = new Date(video.metadata.date).getFullYear();
+        if (!values.includes(videoYear.toString())) return false;
+        break;
+      case 'tags':
+        if (!values.some(tag => video.metadata.tags.includes(tag))) return false;
+        break;
+      // Add more filter cases as needed
+    }
+  }
+
+  return true;
+});
+
+const SearchResults = ({ results }) => {
+  if (!results) return null;
+
+  return (
+    <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="text-sm text-gray-500">
+            Found {results.metadata.totalResults} results 
+            ({results.metadata.searchTime})
+          </span>
+          {results.metadata.relevance > 0 && (
+            <span className="ml-2 text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+              {(results.metadata.relevance * 100).toFixed(0)}% relevant
+            </span>
+          )}
+        </div>
+        {results.metadata.suggestedTags.length > 0 && (
+          <div className="flex gap-2">
+            {results.metadata.suggestedTags.map(tag => (
+              <span key={tag} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+// Modal handlers
+const handleOpenVideoModal = (video) => {
+  setSelectedVideo(video);
+  setVideoModalOpen(true);
+};
+
+const handleCloseVideoModal = () => {
+  setVideoModalOpen(false);
+  setSelectedVideo(null);
+};
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -109,38 +278,28 @@ const {
 
               <div className="flex-1 max-w-2xl mx-4 flex items-center space-x-4">
                 <div className="relative flex-1 group">
-                  {/* Search Container */}
-                  <div className="relative">
-                    {/* AI Badge */}
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                  <div className="relative flex items-center">
+                    <div className="absolute left-3 z-10">
                       <div className="flex items-center bg-indigo-50 rounded-full px-2 py-1">
                         <Brain className="h-3.5 w-3.5 text-indigo-600" />
-                        <span className="ml-1 text-xs font-medium text-indigo-700 whitespace-nowrap">RAG Search</span>
+                        <span className="ml-1 text-xs font-medium text-indigo-700">RAG Search</span>
                       </div>
                     </div>
-
-                    {/* Search Input */}
-                    <input
-                      type="text"
-                      className="w-full pl-32 pr-20 py-3 rounded-lg border-2 border-gray-200 bg-gray-50/50 
-                                focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:bg-white
-                                cursor-pointer hover:bg-white transition-colors"
-                      placeholder="Ask about our archives..."
-                      onClick={() => setSearchDialogOpen(true)}
-                      readOnly
-                    />
-
-                    {/* Right Icons */}
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+                    
+                      {/* Update search input to show active search */}
+                      <input
+                        type="text"
+                        className="w-full pl-28 pr-12 py-2.5 rounded-lg border-2 border-gray-200 
+                                  bg-gray-50/50 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 
+                                  focus:bg-white transition-colors"
+                        placeholder="Search video archives..."
+                        value={searchTerm}
+                        onClick={() => setSearchDialogOpen(true)}
+                        readOnly
+                      />
+                    <div className="absolute right-3 flex items-center space-x-2">
                       <Sparkles className="h-4 w-4 text-indigo-400" />
                       <Search className="h-5 w-5 text-gray-400" />
-                    </div>
-
-                    {/* Hover Tooltip */}
-                    <div className="absolute -bottom-8 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-xs text-gray-600 bg-white px-2 py-1 rounded shadow-sm border">
-                        AI-powered semantic search with Amazon Bedrock
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -273,45 +432,71 @@ const {
                 </div>
               </div>
             </aside>
-
-            {/* Video Grid */}
-            <div className="lg:col-span-3">
-              <div className="relative min-h-[400px]">
-                {isLoading && <LoadingAnimation />}
-                
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredVideos.map((video) => (
-                    <div
-                      key={video.id}
-                      className="transform transition-all duration-300"
-                    >
-                      <VideoCard 
-                        video={video} 
-                        onOpenModal={handleOpenVideoModal}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {filteredVideos.length === 0 && !isLoading && (
-                  <div className="text-center py-12">
-                    <LayoutGrid className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">No videos found</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Try adjusting your filters or search terms
-                    </p>
+              {/* Video Grid */}
+              <div className="lg:col-span-3">
+                <div className="relative min-h-[400px]">
+                  {searchLoading && <LoadingAnimation message="Processing semantic search..." />}
+                  
+                  {searchResults && <SearchResults results={searchResults} />}
+                  
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Ingestion Card - Add this back */}
+                    {isIngesting && (
+                      <div className="transform transition-all duration-300">
+                        <VideoIngestionCard 
+                          videoName={newVideo?.title || "New Video"}
+                          onComplete={() => {
+                            setIsIngesting(false);
+                          }}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Videos Display - Fix the conditional rendering */}
+                    {(searchResults?.videos || filteredVideos).map((video) => (
+                      <div
+                        key={video.id}
+                        className="transform transition-all duration-300"
+                      >
+                        <VideoCard 
+                          video={video} 
+                          onOpenModal={handleOpenVideoModal}
+                        />
+                      </div>
+                    ))}
                   </div>
-                )}
+                  
+                  {/* No Results Message - Update condition */}
+                  {((searchResults?.videos.length === 0) || 
+                    (!searchResults && filteredVideos.length === 0)) && 
+                    !isIngesting && (
+                    <div className="text-center py-12">
+                      <LayoutGrid className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">
+                        No matches found
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Try different search terms or browse all videos
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
           </div>
         </main>
 
-      {/* Dialogs */}
+      {/* Update SemanticSearchDialog */}
       <SemanticSearchDialog 
-        isOpen={isSearchDialogOpen} 
-        onClose={() => setSearchDialogOpen(false)} 
+        isOpen={isSearchDialogOpen}
+        onClose={() => {
+          setSearchDialogOpen(false);
+          if (!searchTerm) {
+            setSearchResults(null);
+          }
+        }}
+        onSearch={handleSemanticSearch}
       />
+
       <VideoGenerationDialog 
         isOpen={isGenerateDialogOpen} 
         onClose={() => setGenerateDialogOpen(false)} 

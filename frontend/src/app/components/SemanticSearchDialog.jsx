@@ -3,14 +3,22 @@ import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Brain, Search, Sparkles } from 'lucide-react';
 
-const SemanticSearchDialog = ({ isOpen, onClose }) => {
+const SemanticSearchDialog = ({ isOpen, onClose, onSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   
-  const handleSearch = (query) => {
+  const handleSearch = async (query) => {
     setSearchQuery(query);
     setIsSearching(true);
-    // Add demo search logic here
+    
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      onSearch(query);
+      onClose();
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
@@ -48,10 +56,18 @@ const SemanticSearchDialog = ({ isOpen, onClose }) => {
                   className="w-full pl-10 pr-12 py-3 rounded-lg text-gray-700 border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   placeholder="What would you like to find?"
                   value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
                 />
                 <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                
+                {isSearching && (
+                  <div className="absolute right-3 top-3.5">
+                    <Brain className="h-5 w-5 text-indigo-600 animate-pulse" />
+                  </div>
+                )}
               </div>
+
 
               {/* Demo suggestions */}
               <div className="bg-gray-50 rounded-lg p-4">
