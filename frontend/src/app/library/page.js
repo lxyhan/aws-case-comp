@@ -33,6 +33,7 @@ import Link from 'next/link';
 import VideoModal from '../components/VideoModal';
 import VideoIngestionCard from '../components/VideoIngestionCard';
 import { motion } from 'framer-motion';
+import SearchResultsDialog from '../components/SearchResultsDialog'
 
 export default function VideoPlatform() {
   const [isSearchDialogOpen, setSearchDialogOpen] = useState(false);
@@ -50,55 +51,36 @@ export default function VideoPlatform() {
     format: [],
     type: []
   });
-    const [searchResults, setSearchResults] = useState(null);
-  
-
-  const MOCK_SEARCH_RESPONSES = {
-    'arctic': {
-      relevance: 0.95,
-      matches: [
-        'Arctic_Ice.mp4',
-        'Polar_Bears.mp4'
-      ],
-      suggestedTags: ['climate change', 'wildlife', 'environmental']
-    },
-    'factory': {
-      relevance: 0.88,
-      matches: [
-        'Factory.mp4'
-      ],
-      suggestedTags: ['industrial', 'manufacturing', 'technology']
-    },
-    'river': {
-      relevance: 0.92,
-      matches: [
-        'River.mp4'
-      ],
-      suggestedTags: ['nature', 'indigenous', 'cultural']
-    }
-  };
+  const [showResultsDialog, setShowResultsDialog] = useState(false);
+  const [searchResults, setSearchResults] = useState(null);
 
   useEffect(() => {
     async function fetchVideos() {
       setIsLoading(true);
       try {
+        const hasIngestedArcticIce = localStorage.getItem('arcticIceIngested') === 'true';
         const response = await fetch('/api/videos');
         const data = await response.json();
         
-        setApiVideos(data.videos);
-        
         if (data.processingVideo) {
-          setNewVideo(data.processingVideo);
-          setIsIngesting(true);
-          
-          setTimeout(() => {
-            setIsIngesting(false);
-            // Check if video already exists before adding
-            setApiVideos(prev => {
-              const exists = prev.some(v => v.id === data.processingVideo.id);
-              return exists ? prev : [data.processingVideo, ...prev];
-            });
-          }, 8000);
+          if (!hasIngestedArcticIce) {
+            // First time seeing this video - show ingestion
+            setNewVideo(data.processingVideo);
+            setIsIngesting(true);
+            setApiVideos(data.videos); // Set initial videos without Arctic Ice
+            
+            // After ingestion animation, add to videos
+            setTimeout(() => {
+              setIsIngesting(false);
+              setApiVideos(prev => [data.processingVideo, ...prev]);
+              localStorage.setItem('arcticIceIngested', 'true');
+            }, 8000);
+          } else {
+            // Already ingested - show in list immediately
+            setApiVideos([data.processingVideo, ...data.videos]);
+          }
+        } else {
+          setApiVideos(data.videos);
         }
       } catch (error) {
         console.error('Error fetching videos:', error);
@@ -108,54 +90,60 @@ export default function VideoPlatform() {
     }
     fetchVideos();
   }, []);
+  
+  useEffect(() => {
+    if (searchResults && !searchLoading) {
+      setShowResultsDialog(true);
+    }
+  }, [searchResults, searchLoading]);
 
-const handleSemanticSearch = async (query) => {
-  setSearchLoading(true);
-  setSearchTerm(query);
 
-  try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Find matching mock response based on keywords
-    const matchingKeyword = Object.keys(MOCK_SEARCH_RESPONSES).find(
-      keyword => query.toLowerCase().includes(keyword.toLowerCase())
-    );
-
-    if (matchingKeyword) {
-      const mockResponse = MOCK_SEARCH_RESPONSES[matchingKeyword];
+  const handleSemanticSearch = async (query) => {
+    setSearchTerm(query);
+    setSearchLoading(true);
+  
+    try {
+      const response = await fetch('/api/semantic-search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Search failed');
+      }
+  
+      const data = await response.json();
       
-      // Filter videos based on mock response
-      const results = apiVideos.filter(video => 
-        mockResponse.matches.includes(video.id)
-      );
-
       setSearchResults({
-        videos: results,
+        videos: data.videos,
         metadata: {
-          relevance: mockResponse.relevance,
-          suggestedTags: mockResponse.suggestedTags,
-          totalResults: results.length,
-          searchTime: '0.67 seconds'
+          ...data.metadata,
+          relevance: data.videos[0]?.confidence || 0,
+          llmAnalysis: data.metadata.analysis,
+          searchTime: data.metadata.searchTime
         }
       });
-    } else {
-      // Default "no exact match" response
+  
+    } catch (error) {
+      console.error('Error in semantic search:', error);
       setSearchResults({
         videos: [],
         metadata: {
           relevance: 0,
           suggestedTags: [],
           totalResults: 0,
-          searchTime: '0.54 seconds'
+          searchTime: '0.54 seconds',
+          analysis: 'Search failed. Please try again.'
         }
       });
+    } finally {
+      setSearchLoading(false);
+      setSearchDialogOpen(false);
     }
-  } finally {
-    setSearchLoading(false);
-  }
-};
-
+  };
 
 const videosToDisplay = searchResults || apiVideos;
 
@@ -593,6 +581,13 @@ const stats = calculateStats();
         isOpen={isVideoModalOpen}
         onClose={handleCloseVideoModal}
       />
+
+      <SearchResultsDialog 
+        results={searchResults}
+        isOpen={showResultsDialog}
+        onClose={() => setShowResultsDialog(false)}
+      />
+
     </div>
   );
 }
