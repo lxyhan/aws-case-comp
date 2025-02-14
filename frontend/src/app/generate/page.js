@@ -586,48 +586,86 @@ const VideoGenerationPage = () => {
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-4">Suggested Prompts</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-medium text-gray-700">Suggested Prompts</h3>
+                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Demo Version</span>
+                  </div>
+                  
+                  {/* Available prompts based on demo content */}
                   <div className="space-y-3">
                     {[
                       {
                         icon: Database,
                         text: "Create a documentary about Arctic research expeditions",
-                        theme: "Research"
+                        theme: "Research",
+                        available: true
                       },
                       {
                         icon: History,
                         text: "Show the evolution of industrial manufacturing techniques",
-                        theme: "Industry"
+                        theme: "Industry",
+                        available: true
                       },
                       {
                         icon: Globe2,
                         text: "Document environmental changes in indigenous territories",
-                        theme: "Environment"
+                        theme: "Environment",
+                        available: false
                       },
                       {
                         icon: Camera,
                         text: "Compile footage of traditional cultural practices",
-                        theme: "Culture"
+                        theme: "Culture",
+                        available: false
                       }
                     ].map((suggestion, index) => (
                       <button
                         key={index}
-                        onClick={() => setPrompt(suggestion.text)}
-                        className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white 
-                                 transition-all duration-200 group"
+                        onClick={() => suggestion.available && setPrompt(suggestion.text)}
+                        className={`w-full flex items-center space-x-3 p-3 rounded-lg
+                                  transition-all duration-200 group
+                                  ${suggestion.available 
+                                    ? 'hover:bg-white cursor-pointer' 
+                                    : 'opacity-50 cursor-not-allowed'}`}
                       >
-                        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center 
-                                    rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 
-                                    group-hover:from-blue-100 group-hover:to-purple-100">
-                          <suggestion.icon className="h-5 w-5 text-blue-600" />
+                        <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center 
+                                      rounded-lg bg-gradient-to-br
+                                      ${suggestion.available
+                                        ? 'from-blue-50 to-purple-50 group-hover:from-blue-100 group-hover:to-purple-100'
+                                        : 'from-gray-50 to-gray-100'}`}>
+                          <suggestion.icon className={`h-5 w-5 ${suggestion.available ? 'text-blue-600' : 'text-gray-400'}`} />
                         </div>
                         <div className="flex-1 text-left">
-                          <p className="text-gray-700 text-sm">{suggestion.text}</p>
-                          <span className="text-xs text-gray-500">{suggestion.theme}</span>
+                          <p className={`text-sm ${suggestion.available ? 'text-gray-700' : 'text-gray-400'}`}>
+                            {suggestion.text}
+                          </p>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-gray-500">{suggestion.theme}</span>
+                            {!suggestion.available && (
+                              <span className="text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                                Coming Soon
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500" />
+                        {suggestion.available && (
+                          <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500" />
+                        )}
                       </button>
                     ))}
+                  </div>
+
+                  {/* Demo notice */}
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="flex items-start space-x-2">
+                      <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-blue-700 font-medium">Demo Content Only</p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          Currently limited to Arctic and Industrial footage. More content coming soon.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
