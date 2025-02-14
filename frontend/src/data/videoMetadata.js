@@ -22,6 +22,32 @@ export const VIDEO_METADATA = {
             'Ice', 'Snow', 'Research Equipment', 'Scientists', 'Research Station'
           ],
           preservation: 'Restored from original Betacam tapes'
+        },
+        translations: {
+          en: {
+            language: 'English',
+            transcription: [
+              { time: '0:00', text: 'The vast Arctic landscape stretches before us...' },
+              { time: '0:15', text: 'Our research team arrived during the spring thaw...' },
+              { time: '0:30', text: 'These ice core samples reveal remarkable data...' }
+            ]
+          },
+          fr: {
+            language: 'Français',
+            transcription: [
+              { time: '0:00', text: 'Le vaste paysage arctique s\'étend devant nous...' },
+              { time: '0:15', text: 'Notre équipe de recherche est arrivée pendant le dégel printanier...' },
+              { time: '0:30', text: 'Ces échantillons de carottes de glace révèlent des données remarquables...' }
+            ]
+          },
+          kr: {
+            language: '한국어',
+            transcription: [
+              { time: '0:00', text: '광활한 북극 풍경이 우리 앞에 펼쳐져 있습니다...' },
+              { time: '0:15', text: '우리 연구팀은 봄철 해빙기에 도착했습니다...' },
+              { time: '0:30', text: '이 얼음 코어 샘플은 놀라운 데이터를 보여줍니다...' }
+            ]
+          }
         }
       }
     },
