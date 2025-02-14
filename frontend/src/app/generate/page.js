@@ -119,80 +119,157 @@ const VideoGenerationPage = () => {
     if (!isGenerating) return null;
     const phase = phases[generationPhase];
     const CurrentIcon = phase?.icon || Film;
-
+  
     return (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50"
+        className="fixed inset-0 z-50 flex items-center justify-center"
       >
+        {/* Blurred background */}
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-md" />
+  
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-4xl w-full border border-white/20"
+          className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-6 w-[800px] shadow-2xl border border-blue-100 relative"
         >
-          <div className="text-center mb-8">
+          {/* Progress Bar */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100 rounded-t-3xl overflow-hidden">
             <motion.div
-              className="inline-block p-4 bg-blue-500/20 rounded-2xl mb-4"
+              className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+              initial={{ width: "0%" }}
+              animate={{ width: `${(generationPhase + 1) * 20}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+  
+          <div className="flex items-center space-x-4 mb-6">
+            <motion.div
+              className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl relative"
               animate={{
                 rotate: [0, 360],
-                scale: [1, 1.2, 1]
+                scale: [1, 1.1, 1]
               }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 3, repeat: Infinity }}
             >
-              <CurrentIcon className="h-12 w-12 text-blue-400" />
+              <div className="absolute inset-0 rounded-xl border-2 border-blue-200/50 animate-ping" />
+              <CurrentIcon className="h-8 w-8 text-blue-600" />
             </motion.div>
-            <h2 className="text-2xl font-bold text-white mb-2">{phase?.text}</h2>
-            <p className="text-blue-200">{phase?.subtext}</p>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-gray-900">{phase?.text}</h2>
+              <p className="text-blue-600 text-sm">{phase?.subtext}</p>
+            </div>
           </div>
-
-          <div className="grid grid-cols-3 gap-6 mb-8">
-            {Object.entries(phase?.metrics || {}).map(([key, value]) => (
-              <div key={key} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                <h3 className="text-white/60 text-sm mb-2 capitalize">{key}</h3>
-                <p className="text-2xl font-bold text-white">{value}</p>
-                <div className="mt-2 h-1 bg-white/20 rounded-full overflow-hidden">
+  
+          {/* Video Search Animation */}
+          <div className="relative h-[300px] mb-6 overflow-hidden rounded-xl border border-blue-100 bg-white">
+            <div className="absolute inset-0 flex flex-wrap gap-2 p-4">
+              {Object.entries(VIDEO_METADATA).map(([key, metadata], index) => {
+                const isRelevant = key.toLowerCase().includes('arctic') || 
+                                 key.toLowerCase().includes('polar');
+                
+                return (
                   <motion.div
-                    className="h-full bg-blue-500"
-                    initial={{ width: 0 }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: phase.duration / 1000 }}
-                  />
-                </div>
+                    key={key}
+                    initial={{ opacity: 0.3 }}
+                    animate={{
+                      opacity: isRelevant && generationPhase >= 1 ? 1 : 0.3,
+                      scale: isRelevant && generationPhase >= 1 ? 1.05 : 1,
+                      borderColor: isRelevant && generationPhase >= 1 ? '#3B82F6' : '#E5E7EB'
+                    }}
+                    className={`relative w-[120px] group transition-all`}
+                  >
+                    <div className="aspect-video rounded-lg overflow-hidden border-2">
+                      <img
+                        src={metadata.thumbnailSrc}
+                        alt={metadata.title}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Scanning effect */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-b from-blue-400/20 to-transparent h-1/3"
+                        animate={{ 
+                          y: ['0%', '200%'],
+                          opacity: isRelevant && generationPhase >= 1 ? 1 : 0 
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {generationPhase === 1 && isRelevant && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="bg-blue-500 text-white p-1 rounded-full"
+                        >
+                          <Check className="h-4 w-4" />
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+  
+          {/* Processing Info */}
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <div className="space-y-2 font-mono text-sm">
+              {[
+                `Scanning archive for relevant content...`,
+                `Found ${Object.entries(VIDEO_METADATA).filter(([key]) => 
+                  key.toLowerCase().includes('arctic') || 
+                  key.toLowerCase().includes('polar')
+                ).length} matching clips`,
+                `Processing selected footage for compilation...`
+              ].map((text, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.2 }}
+                  className="flex items-center space-x-2"
+                >
+                  <span className="text-blue-500">{'>'}</span>
+                  <span className="text-gray-600">{text}</span>
+                  {i === Math.min(generationPhase, 2) && (
+                    <motion.span
+                      className="text-blue-500"
+                      animate={{ opacity: [1, 0, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    >
+                      ▋
+                    </motion.span>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+  
+          {/* Simple metrics */}
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            {[
+              {
+                label: "Archives Searched",
+                value: `${Math.min(generationPhase * 25, 100)}%`
+              },
+              {
+                label: "Clips Analyzed",
+                value: generationPhase >= 1 ? 
+                  `${Object.keys(VIDEO_METADATA).length}/${Object.keys(VIDEO_METADATA).length}` : 
+                  `${Math.floor(generationPhase * Object.keys(VIDEO_METADATA).length)}/${Object.keys(VIDEO_METADATA).length}`
+              },
+              {
+                label: "Match Confidence",
+                value: `${Math.min(Math.floor((generationPhase + 1) * 20), 95)}%`
+              }
+            ].map((metric, index) => (
+              <div key={index} className="bg-white rounded-lg p-3 border border-blue-50">
+                <p className="text-sm text-gray-600">{metric.label}</p>
+                <p className="text-lg font-semibold text-gray-900">{metric.value}</p>
               </div>
-            ))}
-          </div>
-
-          <div className="flex justify-center space-x-2 mb-6">
-            {phases.map((p, index) => (
-              <motion.div
-                key={index}
-                className={`h-2 w-2 rounded-full ${
-                  index === generationPhase ? 'bg-blue-500' :
-                  index < generationPhase ? 'bg-green-500' : 'bg-white/20'
-                }`}
-                animate={index === generationPhase ? {
-                  scale: [1, 1.5, 1],
-                  opacity: [1, 0.5, 1]
-                } : {}}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
-            ))}
-          </div>
-
-          <div className="space-y-2 font-mono text-sm text-white/60">
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.2 }}
-                className="flex items-center space-x-2"
-              >
-                <span className="text-blue-400">{'>'}</span>
-                <span>Processing frame {Math.floor(Math.random() * 1000)}</span>
-              </motion.div>
             ))}
           </div>
         </motion.div>
@@ -411,37 +488,50 @@ const VideoGenerationPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/library" 
-              className="flex items-center space-x-2 text-white/80 hover:text-white"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span>Back to Library</span>
-            </Link>
-            
-            <div className="flex items-center space-x-6">
-              {[
-                { icon: Brain, label: 'Neural Engine' },
-                { icon: Database, label: 'Archive Search' },
-                { icon: FileVideo, label: 'Video Processing' },
-                { icon: Languages, label: 'Multi-Language' }
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-2 text-white/80"
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="text-sm">{item.label}</span>
-                </div>
-              ))}
-            </div>
+  <div className="min-h-screen bg-gray-50">
+    {/* Enhanced header with animated gradient */}
+    <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 relative overflow-hidden">
+      <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20"
+        animate={{ x: ['0%', '100%', '0%'] }}
+        transition={{ duration: 10, repeat: Infinity }}
+      />
+      <div className="max-w-7xl mx-auto px-6 py-4 relative">
+        <div className="flex items-center justify-between">
+          <Link 
+            href="/library" 
+            className="flex items-center space-x-2 text-white/80 hover:text-white
+                      bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm transition-all
+                      hover:bg-white/20"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back to Library</span>
+          </Link>
+          
+          <div className="flex items-center space-x-6">
+            {[
+              { icon: Brain, label: 'Neural Engine' },
+              { icon: Database, label: 'Archive Search' },
+              { icon: FileVideo, label: 'Video Processing' },
+              { icon: Languages, label: 'Multi-Language' }
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center space-x-2 text-white/80 hover:text-white
+                          px-4 py-2 rounded-xl hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <item.icon className="h-5 w-5" />
+                <span className="text-sm">{item.label}</span>
+              </motion.div>
+            ))}
           </div>
         </div>
       </div>
+    </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {!generationResult && (
