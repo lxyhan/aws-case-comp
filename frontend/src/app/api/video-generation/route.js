@@ -1,7 +1,10 @@
 // src/app/api/video-generation/route.js
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { PollyClient, SynthesizeSpeechCommand } from "@aws-sdk/client-polly";
 import { VIDEO_METADATA } from '@/data/videoMetadata';
 import { DEMO_COMPILATIONS } from '@/data/compilations';
+import { writeFile } from 'fs/promises';
+import path from 'path';
 
 const bedrockClient = new BedrockRuntimeClient({
   region: process.env.NEXT_PUBLIC_AWS_REGION,
@@ -11,6 +14,20 @@ const bedrockClient = new BedrockRuntimeClient({
   }
 });
 
+const pollyClient = new PollyClient({
+  region: "us-east-1",
+  credentials: {
+    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY
+  }
+});
+
+// In your route.js
+async function generateVoiceover(compilationId) {
+    // Randomly select between version 1 or 2 of the voiceover
+    // const version = Math.random() < 0.5 ? '1' : '2';
+    return `/voiceovers/${compilationId}.mp3`;
+}
 export async function POST(request) {
   try {
     const { prompt } = await request.json();
@@ -54,12 +71,18 @@ export async function POST(request) {
     // Get the recommended compilation
     const compilation = DEMO_COMPILATIONS[analysis.recommendedTheme] || DEMO_COMPILATIONS.ARCTIC_RESEARCH;
     
+    // Generate voiceover
+    const voiceoverPath = await generateVoiceover(compilation.id);
+    
     // Get clip metadata for the compilation
-    const relevantClips = compilation.requiredClips.map(filename => ({
-      ...VIDEO_METADATA[filename],
-      relevanceScore: analysis.confidence,
-      reason: analysis.reasoning[0] // Use first reason as clip reason
-    }));
+    const relevantClips = compilation.requiredClips.map(clip => {
+      const filename = typeof clip === 'string' ? clip : clip.filename;
+      return {
+        ...VIDEO_METADATA[filename],
+        relevanceScore: analysis.confidence,
+        reason: analysis.reasoning[0]
+      };
+    });
 
     return Response.json({
       relevantClips,
@@ -68,7 +91,10 @@ export async function POST(request) {
       voiceoverScript: compilation.voiceoverScript,
       finalVideo: {
         id: compilation.id,
+        title: compilation.title,
         finalVideo: compilation.finalVideo,
+        voiceover: voiceoverPath,
+        duration: compilation.duration,
         isExactMatch: true
       },
       metadata: {
