@@ -5,7 +5,7 @@ export const VIDEO_METADATA = {
       title: 'Arctic Expedition Documentary (1983)',
       description: 'Groundbreaking footage from the International Arctic Research expedition, captured on Betacam. One of the earliest comprehensive studies of polar ice conditions.',
       type: 'Scientific Documentary',
-      duration: '12:45',
+      duration: '00:15',
       thumbnailSrc: '/video_images/arctic_ice.jpg',
       metadata: {
         date: '1983-03-15',
@@ -53,10 +53,10 @@ export const VIDEO_METADATA = {
     },
   
     'Factory.mp4': {
-      title: 'American Industrial Revolution (1975)',
+      title: 'Clip from American Industrial Revolution (1975)',
       description: 'Inside look at automotive manufacturing during the height of American industrial production. Shot on U-matic video for educational broadcast.',
       type: 'Industrial Documentary',
-      duration: '18:20',
+      duration: '00:19',
       thumbnailSrc: '/video_images/factory.jpg',
       metadata: {
         date: '1975-09-20',
@@ -79,9 +79,9 @@ export const VIDEO_METADATA = {
   
     'Polar_Bears.mp4': {
       title: 'Wildlife of the Arctic (1979)',
-      description: 'Award-winning nature documentary featuring unprecedented polar bear footage. Originally broadcast as part of the "World of Nature" series.',
+      description: 'Clip from Award-winning nature documentary featuring unprecedented polar bear footage. Originally broadcast as part of the "World of Nature" series.',
       type: 'Wildlife Documentary',
-      duration: '20:15',
+      duration: '00:15',
       thumbnailSrc: '/video_images/polar_bears.jpg',
       metadata: {
         date: '1979-11-30',
