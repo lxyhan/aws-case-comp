@@ -88,7 +88,7 @@ export async function POST(request) {
         suggestedTags: analysis.suggestedTags,
         searchContext: analysis.searchContext,
         totalResults: matchedVideos.length,
-        searchTime: '0.67 seconds',
+        searchTime: '3.67 seconds',
         model: "claude-3-sonnet"
       }
     });

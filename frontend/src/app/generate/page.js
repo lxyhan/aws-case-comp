@@ -1,17 +1,15 @@
 'use client'
-import React, { useState, useEffect } from 'react';
-import { Brain, ArrowLeft, Wand2, Film, Sparkles, History, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Brain, ArrowLeft, Wand2, Film, Sparkles, History, Check, Play } from 'lucide-react';
 import Link from 'next/link';
-import videoLibrary from '../../data/videos';
 import GenerationStates from '../components/GenerationStates';
-import { findRelevantVideos, generateVideoAnalysis } from '../services/videoGenerationService';
+import { generateVideo } from '../services/videoGenerationService';
 
 const VideoGenerationPage = () => {
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
-    const [selectedVideos, setSelectedVideos] = useState([]);
-    const [videoAnalysis, setVideoAnalysis] = useState(null);
-    const [activeTab, setActiveTab] = useState('sources'); // 'sources' or 'analysis'
+    const [generationResult, setGenerationResult] = useState(null);
+    const [activeTab, setActiveTab] = useState('sources');
     
     const handleGenerate = async () => {
       if (!prompt.trim()) return;
@@ -19,28 +17,18 @@ const VideoGenerationPage = () => {
       setIsGenerating(true);
       
       try {
-        // Find relevant videos
-        const relevantVideos = await findRelevantVideos(prompt, videoLibrary.videos);
-        setSelectedVideos(relevantVideos);
-  
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 8000));
-  
-        // Generate analysis
-        const analysis = await generateVideoAnalysis(prompt, relevantVideos);
-        setVideoAnalysis(analysis);
+        const result = await generateVideo(prompt);
+        setGenerationResult(result);
       } catch (error) {
         console.error('Generation error:', error);
       } finally {
         setIsGenerating(false);
       }
     };
-  
-    // Render the right panel content based on active tab
+
     const renderRightPanel = () => {
       return (
         <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
-          {/* Tab Navigation */}
           <div className="flex space-x-4 mb-6">
             <button
               onClick={() => setActiveTab('sources')}
@@ -63,7 +51,7 @@ const VideoGenerationPage = () => {
               AI Analysis
             </button>
           </div>
-  
+
           {activeTab === 'sources' ? (
             <>
               <div className="flex items-center justify-between mb-4">
@@ -76,12 +64,10 @@ const VideoGenerationPage = () => {
               </div>
               
               <div className="space-y-4">
-                {selectedVideos.map((video, index) => (
+                {generationResult?.relevantClips?.map((video, index) => (
                   <div 
-                    key={video.id}
-                    className={`relative rounded-lg overflow-hidden transition-all duration-300 ${
-                      isGenerating ? 'opacity-100 transform translate-y-0' : ''
-                    }`}
+                    key={video.title}
+                    className={`relative rounded-lg overflow-hidden transition-all duration-300`}
                     style={{ transitionDelay: `${index * 150}ms` }}
                   >
                     <div className="relative aspect-video">
@@ -90,40 +76,41 @@ const VideoGenerationPage = () => {
                         alt={video.title}
                         className="w-full h-full object-cover"
                       />
-                      {isGenerating && (
-                        <div className="absolute inset-0 bg-indigo-500/10 flex items-center justify-center">
-                          <div className="bg-white/90 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600">
-                            Processing clip...
-                          </div>
-                        </div>
-                      )}
                     </div>
                     <div className="p-3 bg-gray-50">
                       <h3 className="text-sm font-medium text-gray-900 truncate">{video.title}</h3>
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-xs text-gray-500">{video.duration}</p>
-                        {video.relevanceScore && (
-                          <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
-                            {(video.relevanceScore * 100).toFixed(0)}% match
-                          </span>
-                        )}
+                        <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
+                          {(video.relevanceScore * 100).toFixed(0)}% match
+                        </span>
                       </div>
-                      {isGenerating && (
-                        <div className="mt-2 h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-indigo-600 transition-all duration-1000"
-                            style={{ 
-                              width: `${Math.random() * 100}%`,
-                              transitionDelay: `${index * 200}ms`
-                            }}
-                          />
+                      <p className="text-xs text-gray-600 mt-2">{video.reason}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {generationResult?.finalVideo && (
+                  <div className="mt-6 border-t pt-6">
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">Final Compilation</h3>
+                    <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                      <video
+                        src={generationResult.finalVideo.finalVideo}
+                        controls
+                        className="w-full h-full object-contain"
+                      />
+                      {!generationResult.finalVideo.isExactMatch && (
+                        <div className="absolute top-2 right-2">
+                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                            Demo approximation
+                          </span>
                         </div>
                       )}
                     </div>
                   </div>
-                ))}
-  
-                {selectedVideos.length === 0 && (
+                )}
+
+                {!generationResult?.relevantClips && (
                   <div className="text-center py-8">
                     <Film className="mx-auto h-8 w-8 text-gray-400" />
                     <p className="mt-2 text-sm text-gray-500">
@@ -136,33 +123,33 @@ const VideoGenerationPage = () => {
           ) : (
             <>
               <div className="space-y-6">
-                {videoAnalysis ? (
+                {generationResult ? (
                   <>
                     <div>
                       <h3 className="text-sm font-medium text-gray-900 mb-2">Description</h3>
-                      <p className="text-sm text-gray-600">{videoAnalysis.description}</p>
+                      <p className="text-sm text-gray-600">{generationResult.description}</p>
                     </div>
                     
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900 mb-2">AI Insights</h3>
+                      <h3 className="text-sm font-medium text-gray-900 mb-2">Editing Notes</h3>
                       <div className="space-y-2">
-                        {videoAnalysis.aiInsights.map((insight, index) => (
+                        {generationResult.editingNotes?.map((note, index) => (
                           <div 
                             key={index}
                             className="flex items-center space-x-2 text-sm text-gray-600"
                           >
                             <Check className="h-4 w-4 text-green-500" />
-                            <span>{insight}</span>
+                            <span>{note}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-  
+
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900 mb-2">Generated Transcript</h3>
+                      <h3 className="text-sm font-medium text-gray-900 mb-2">Voiceover Script</h3>
                       <div className="bg-gray-50 rounded-lg p-4">
                         <pre className="text-sm text-gray-600 whitespace-pre-wrap">
-                          {videoAnalysis.transcript}
+                          {generationResult.voiceoverScript}
                         </pre>
                       </div>
                     </div>
@@ -263,9 +250,9 @@ const VideoGenerationPage = () => {
                   <h3 className="text-sm font-medium text-gray-900 mb-3">Example prompts</h3>
                   <div className="space-y-2">
                     {[
-                      "Create a 2-minute documentary about the evolution of computers",
-                      "Make an educational video about space exploration milestones",
-                      "Generate a highlight reel of Olympic opening ceremonies"
+                      "Create a documentary about Arctic research and wildlife",
+                      "Show the contrast between industrial development and traditional practices",
+                      "Make an educational video about environmental change"
                     ].map((example, i) => (
                       <button
                         key={i}
@@ -282,7 +269,7 @@ const VideoGenerationPage = () => {
           </div>
 
           <div className="col-span-1">
-                {renderRightPanel()}
+            {renderRightPanel()}
           </div>
         </div>
       </main>
